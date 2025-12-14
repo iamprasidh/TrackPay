@@ -3,7 +3,7 @@ part 'transaction.g.dart';
 
 enum TransactionType { income, expense }
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 4)
 class Transaction {
   @HiveField(0)
   final String id;
