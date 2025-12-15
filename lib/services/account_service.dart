@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 import '../models/account.dart';
 
-class AccountServices{
+class AccountService{
   static const String boxName = "accounts";
 
   static Future<Box<Account>> openBox() async {
