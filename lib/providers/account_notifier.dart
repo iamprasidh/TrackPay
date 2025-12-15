@@ -13,12 +13,12 @@ class AccountNotifier extends StateNotifier<List<Account>>{
   }
 
   Future<void> addAccounts(Account account) async {
-    await AccountServices.addAccount(account);
+    await AccountService.addAccount(account);
     await loadAccounts();
   }
 
   Future <void> deleteAccount(String id) async {
-    await AccountServices.deleteAccount(id);
+    await AccountService.deleteAccount(id);
     await loadAccounts();
   }
 }
