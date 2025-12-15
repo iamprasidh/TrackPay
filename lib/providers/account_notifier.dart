@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import '../models/account.dart';
 import '../services/account_service.dart';
 
@@ -9,8 +8,8 @@ class AccountNotifier extends StateNotifier<List<Account>>{
   }
 
   Future<void> loadAccounts() async {
-    final account = await AccountServices.getAccounts();
-    state = account;
+    final accounts = await AccountService.getAccounts();
+    state = accounts;
   }
 
   Future<void> addAccounts(Account account) async {
