@@ -19,7 +19,7 @@ class TransactionNotifier extends StateNotifier<List<Transaction>>{
   }
 
     Future<void> deleteTransaction(String id) async {
-    await TransactionService.deletetransaction(id); 
+    await TransactionService.deleteTransaction(id); 
     await loadTransaction();
   }
 }
