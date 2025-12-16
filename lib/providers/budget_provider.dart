@@ -21,7 +21,7 @@ final budgetForCategoryProvider =
 
 final spentPerCategoryProvider =
     Provider.family<double, String>((ref, categoryId) {
-  final transactions = ref.watch(transactionNotifierProvider);
+  final transactions = ref.watch(transactionProvider);
   return transactions
       .where((t) =>
           t.categoryId == categoryId &&
