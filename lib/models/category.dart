@@ -6,13 +6,13 @@ class Category {
   @HiveField(0)
   final String id;
   @HiveField(1)
-  final String categoryName;
+  final String CategoryName;
   @HiveField(2)
   final String? subCategoryName;
 
   Category({
     required this.id,
-    required this.categoryName,
+    required this.CategoryName,
     this.subCategoryName,
   });
 }

@@ -18,7 +18,7 @@ class CategoryAdapter extends TypeAdapter<Category> {
     };
     return Category(
       id: fields[0] as String,
-      categoryName: fields[1] as String,
+      CategoryName: fields[1] as String,
       subCategoryName: fields[2] as String?,
     );
   }
@@ -30,7 +30,7 @@ class CategoryAdapter extends TypeAdapter<Category> {
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.categoryName)
+      ..write(obj.CategoryName)
       ..writeByte(2)
       ..write(obj.subCategoryName);
   }
