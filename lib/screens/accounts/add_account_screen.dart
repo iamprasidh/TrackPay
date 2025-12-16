@@ -123,6 +123,20 @@ void _loadUserName() async {
               onPressed: _addAccount,
               child: const Text("Add Account"),
             ),
+
+            Expanded(
+                child: ListView.builder(
+                  itemCount: accounts.length,
+                  itemBuilder: (context, index) {
+                    final acc = accounts[index];
+                    return ListTile(
+                      title: Text(acc.accountName),
+                      subtitle: Text("Balance: ₹${acc.openingBalance.toStringAsFixed(2)}"),
+                    );
+                  },
+                ),
+              ),
+
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _finishSetup,
