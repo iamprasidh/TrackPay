@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/intro/welcome_screen.dart';
+import './models/user.dart';
 import './models/account.dart';
 import './models/category.dart';
+import './models/budget.dart';
+import './models/transaction.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
-    Hive.registerAdapter(AccountAdapter());
-    Hive.registerAdapter(CategoryAdapter());
-  
+  Hive.registerAdapter(UserAdapter());
+  Hive.registerAdapter(AccountAdapter());
+  Hive.registerAdapter(CategoryAdapter());
+  Hive.registerAdapter(TransactionAdapter());
+  Hive.registerAdapter(BudgetAdapter());
   runApp(
     const ProviderScope(
       child: MyApp(),
