@@ -3,6 +3,7 @@ import 'package:trackpay/models/transaction.dart';
 import 'package:trackpay/providers/transaction_provider.dart';
 import '../models/budget.dart';
 import 'budget_notifier.dart';
+import '../../utils/list_extensions.dart';
 
 final budgetNotifierProvider =
     StateNotifierProvider<BudgetNotifier, List<Budget>>(
@@ -12,12 +13,14 @@ final budgetNotifierProvider =
 final budgetForCategoryProvider =
     Provider.family<double?, String>((ref, categoryId) {
   final budgets = ref.watch(budgetNotifierProvider);
-  final budget = budgets.firstWhere(
+
+  final budget = budgets.firstOrNull(
     (b) => b.categoryId == categoryId,
-    orElse: () => null,
   );
+
   return budget?.limit;
 });
+
 
 final spentPerCategoryProvider =
     Provider.family<double, String>((ref, categoryId) {
