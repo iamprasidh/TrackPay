@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'screens/intro/welcome_screen.dart';
 import './models/user.dart';
 import './models/account.dart';
 import './models/category.dart';
 import './models/budget.dart';
 import './models/transaction.dart';
+import 'screens/launch/launch_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const WelcomeScreen(),
+      home: const LaunchScreen(),
     );
   }
 }
