@@ -1,36 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
-
 import '../../models/transaction.dart';
+import '../../models/category.dart';
+import '../../models/account.dart';
+import '../../providers/transaction_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
-import '../../providers/transaction_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
   const AddTransactionScreen({super.key});
 
   @override
-  ConsumerState<AddTransactionScreen> createState() =>
-      _AddTransactionScreenState();
+  ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
 }
 
-class _AddTransactionScreenState
-    extends ConsumerState<AddTransactionScreen> {
-  final _formKey = GlobalKey<FormState>();
+class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController noteController = TextEditingController();
+  DateTime selectedDate = DateTime.now();
+  TransactionType? type = TransactionType.expense;
+  Account? selectedAccount;
+  Category? selectedCategory;
 
-  TransactionType _type = TransactionType.expense;
-  String? _selectedAccountId;
-  String? _selectedCategoryId;
+  final uuid = const Uuid();
 
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
+  void _saveTransaction() async {
+    if (amountController.text.isEmpty || selectedAccount == null || selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all required fields")),
+      );
+      return;
+    }
 
-  @override
-  void dispose() {
-    _amountController.dispose();
-    _noteController.dispose();
-    super.dispose();
+    final transaction = Transaction(
+      id: uuid.v4(),
+      date: selectedDate,
+      transactionType: type!,
+      amount: double.tryParse(amountController.text) ?? 0,
+      accountId: selectedAccount!.id,
+      categoryId: selectedCategory!.id,
+      note: noteController.text,
+    );
+
+    await ref.read(transactionProvider.notifier).addTransaction(transaction);
+    Navigator.pop(context);
   }
 
   @override
@@ -39,128 +53,79 @@ class _AddTransactionScreenState
     final categories = ref.watch(categoryNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Transaction')),
+      appBar: AppBar(title: const Text("Add Transaction")),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              // Income / Expense toggle
-              ToggleButtons(
-                isSelected: [
-                  _type == TransactionType.expense,
-                  _type == TransactionType.income,
-                ],
-                onPressed: (index) {
-                  setState(() {
-                    _type = index == 0
-                        ? TransactionType.expense
-                        : TransactionType.income;
-                  });
-                },
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Text('Expense'),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Text('Income'),
-                  ),
-                ],
-              ),
+        child: ListView(
+          children: [
+            // Amount
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Amount"),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              // Account dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedAccountId,
-                decoration:
-                    const InputDecoration(labelText: 'Account'),
-                items: accounts
-                    .map((a) => DropdownMenuItem(
-                          value: a.id,
-                          child: Text(a.accountName),
-                        ))
-                    .toList(),
-                onChanged: (v) => _selectedAccountId = v,
-                validator: (v) =>
-                    v == null ? 'Select an account' : null,
-              ),
+            // Type
+            DropdownButton<TransactionType>(
+              value: type,
+              onChanged: (val) => setState(() => type = val),
+              items: TransactionType.values
+                  .map((t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(t.name.toUpperCase()),
+                      ))
+                  .toList(),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              // Category dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedCategoryId,
-                decoration:
-                    const InputDecoration(labelText: 'Category'),
-                items: categories
-                    .map((c) => DropdownMenuItem(
-                          value: c.id,
-                          child: Text(c.categoryName),
-                        ))
-                    .toList(),
-                onChanged: (v) => _selectedCategoryId = v,
-                validator: (v) =>
-                    v == null ? 'Select a category' : null,
-              ),
+            // Account
+            DropdownButton<Account>(
+              value: selectedAccount,
+              hint: const Text("Select Account"),
+              onChanged: (val) => setState(() => selectedAccount = val),
+              items: accounts
+                  .map((a) => DropdownMenuItem(
+                        value: a,
+                        child: Text(a.accountName),
+                      ))
+                  .toList(),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              // Amount
-              TextFormField(
-                controller: _amountController,
-                decoration:
-                    const InputDecoration(labelText: 'Amount'),
-                keyboardType: TextInputType.number,
-                validator: (v) {
-                  final value = double.tryParse(v ?? '');
-                  if (value == null || value <= 0) {
-                    return 'Enter valid amount';
-                  }
-                  return null;
-                },
-              ),
+            // Category
+            DropdownButton<Category>(
+              value: selectedCategory,
+              hint: const Text("Select Category"),
+              onChanged: (val) => setState(() => selectedCategory = val),
+              items: categories
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(c.categoryName),
+                      ))
+                  .toList(),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              // Note
-              TextFormField(
-                controller: _noteController,
-                decoration:
-                    const InputDecoration(labelText: 'Note (optional)'),
-              ),
+            // Note
+            TextField(
+              controller: noteController,
+              decoration: const InputDecoration(labelText: "Note (optional)"),
+            ),
 
-              const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
-              // Save
-              ElevatedButton(
-                onPressed: _saveTransaction,
-                child: const Text('Save Transaction'),
-              ),
-            ],
-          ),
+            ElevatedButton(
+              onPressed: _saveTransaction,
+              child: const Text("Save Transaction"),
+            )
+          ],
         ),
       ),
     );
-  }
-
-  void _saveTransaction() {
-    if (!_formKey.currentState!.validate()) return;
-
-    ref.read(transactionProvider.notifier).addTransaction(
-          Transaction(
-            id: const Uuid().v4(),
-            accountId: _selectedAccountId!,
-            categoryId: _selectedCategoryId!,
-            transactionType: _type,
-            amount: double.parse(_amountController.text),
-            note: _noteController.text,
-          ),
-        );
-
-    Navigator.pop(context);
   }
 }
