@@ -17,36 +17,43 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final List<Account> accounts = [];
 
   void _addAccount() async {
-    final name = accountNameController.text.trim();
-    final balanceText = balanceController.text.trim();
-    if (name.isEmpty) return;
+  final name = accountNameController.text.trim();
+  final balanceText = balanceController.text.trim();
+  if (name.isEmpty) return; // require account name
 
-    final openingBalance = double.tryParse(balanceText) ?? 0.0;
+  final openingBalance = double.tryParse(balanceText) ?? 0.0;
 
-    final account = Account(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      accountName: name,
-      openingBalance: openingBalance,
-    );
+  final account = Account(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    accountName: name,
+    openingBalance: openingBalance,
+  );
 
-    final box = await Hive.openBox<Account>('accounts');
-    await box.put(account.id, account);
+  // Save to Hive
+  final box = await Hive.openBox<Account>('accounts');
+  await box.put(account.id, account);
 
-    setState(() {
-      accounts.add(account);
-      accountNameController.clear();
-      balanceController.clear();
-    });
-  }
+  setState(() {
+    accounts.add(account); // update local list
+    accountNameController.clear();
+    balanceController.clear();
+  });
+}
 
   void _finishSetup() {
-    if (accounts.isEmpty) return; // Require at least one account
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+  if (accounts.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please add at least one account")),
     );
+    return;
   }
+
+  // Navigate to Dashboard
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const DashboardScreen()),
+  );
+}
 
     @override
   void initState() {
