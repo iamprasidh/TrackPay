@@ -1,22 +1,28 @@
 import 'package:hive/hive.dart';
-part 'transaction.g.dart';
+import 'transaction_type.dart';
 
-enum TransactionType { income, expense }
+part 'transaction.g.dart';
 
 @HiveType(typeId: 4)
 class Transaction {
   @HiveField(0)
   final String id;
+
   @HiveField(1)
   final DateTime date;
+
   @HiveField(2)
   final String accountId;
-  @HiveField(3)    
+
+  @HiveField(3)
   final String categoryId;
+
   @HiveField(4)
   final TransactionType transactionType;
+
   @HiveField(5)
   final double amount;
+
   @HiveField(6)
   final String? note;
 
