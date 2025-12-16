@@ -9,7 +9,7 @@ class TransactionService {
   }
 
   static Future<List<Transaction>> getTransactions() async {
-  final box = await openBox();
+  final box = await Hive.openBox<Transaction>(boxName);
   return box.values.toList();
 }
 
@@ -23,7 +23,7 @@ class TransactionService {
     await box.put(transaction.id, transaction);
   }
 
-  static Future<void> deletetransaction(String id) async {
+  static Future<void> deleteTransaction(String id) async {
     final box = await openBox();
     await box.delete(id);
   }
