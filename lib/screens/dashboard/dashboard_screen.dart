@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../providers/dashboard/dashboard_provider.dart';
+import '../../providers/transaction_provider.dart';
+import '../../models/transaction_type.dart';
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final transactions = ref.watch(recentTransactionsProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('TrackPay'),
@@ -26,10 +32,22 @@ class DashboardScreen extends ConsumerWidget {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                _StatTile(title: "Balance", value: "₹0"),
-                _StatTile(title: "Income", value: "₹0"),
-                _StatTile(title: "Expense", value: "₹0"),
+              children: [
+                _StatTile(
+                  title: "Balance",
+                  value:
+                      "₹${ref.watch(balanceProvider).toStringAsFixed(2)}",
+                ),
+                _StatTile(
+                  title: "Income",
+                  value:
+                      "₹${ref.watch(totalIncomeProvider).toStringAsFixed(2)}",
+                ),
+                _StatTile(
+                  title: "Expense",
+                  value:
+                      "₹${ref.watch(totalExpenseProvider).toStringAsFixed(2)}",
+                ),
               ],
             ),
           ),
@@ -54,12 +72,32 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 8),
 
           Expanded(
-            child: Center(
-              child: Text(
-                "No transactions yet",
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
+            child: transactions.isEmpty
+                ? const Center(child: Text("No transactions yet"))
+                : ListView.builder(
+                    itemCount: transactions.length,
+                    itemBuilder: (context, index) {
+                      final t = transactions[index];
+                      return ListTile(
+                        title: Text(
+                          "₹${t.amount}",
+                          style: TextStyle(
+                            color: t.transactionType ==
+                                    TransactionType.income
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                        ),
+                        subtitle: Text(t.note ?? ''),
+                        trailing: Text(
+                          t.transactionType ==
+                                  TransactionType.income
+                              ? "Income"
+                              : "Expense",
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -71,7 +109,10 @@ class _StatTile extends StatelessWidget {
   final String title;
   final String value;
 
-  const _StatTile({required this.title, required this.value});
+  const _StatTile({
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
