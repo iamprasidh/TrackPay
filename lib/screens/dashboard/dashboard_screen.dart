@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/dashboard/dashboard_provider.dart';
 import '../../providers/transaction_provider.dart';
-import '../../models/transaction_type.dart';
+import '../../models/transaction.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
