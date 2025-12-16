@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../transaction_provider.dart';
 import '../../models/transaction.dart';
-import '../../models/transaction_type.dart';
 
 final totalIncomeProvider = Provider<double>((ref) {
   final transactions = ref.watch(transactionProvider);
