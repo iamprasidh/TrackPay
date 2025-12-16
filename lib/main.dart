@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/intro/welcome_screen.dart';
+import './models/account.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+
+    Hive.registerAdapter(AccountAdapter());
+
   
   runApp(
     const ProviderScope(
