@@ -150,7 +150,7 @@ class _AddTransactionScreenState
   void _saveTransaction() {
     if (!_formKey.currentState!.validate()) return;
 
-    ref.read(transactionNotifierProvider.notifier).addTransaction(
+    ref.read(transactionProvider.notifier).addTransaction(
           Transaction(
             id: const Uuid().v4(),
             accountId: _selectedAccountId!,
