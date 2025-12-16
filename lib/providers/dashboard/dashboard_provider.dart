@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trackpay/models/transaction_type.dart';
 import '../transaction_provider.dart';
 import '../../models/transaction.dart';
 import '../account_provider.dart';
