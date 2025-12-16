@@ -17,6 +17,14 @@ class CategoryNotifier extends StateNotifier<List<Category>> {
     await loadCategories();
   }
 
+    Future<void> updateCategory(Category category) async {
+    await CategoryService.updateCategory(category);
+    state = [
+    for (final c in state)
+      if (c.id == category.id) category else c
+  ];
+}
+
   Future<void> deleteCategory(String id) async {
     await CategoryService.deleteCategory(id);
     await loadCategories();
