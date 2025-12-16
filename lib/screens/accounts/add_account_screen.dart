@@ -11,6 +11,7 @@ class AddAccountScreen extends StatefulWidget {
 }
 
 class _AddAccountScreenState extends State<AddAccountScreen> {
+  String userName = "User"; // default
   final TextEditingController accountNameController = TextEditingController();
   final TextEditingController balanceController = TextEditingController();
   final List<Account> accounts = [];
@@ -47,6 +48,23 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     );
   }
 
+    @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+void _loadUserName() async {
+  final box = await Hive.openBox('user');
+  final name = box.get('name'); // get the saved name
+  if (name != null && mounted) {
+    setState(() {
+      userName = name;
+    });
+  }
+}
+
+
   @override
   void dispose() {
     accountNameController.dispose();
@@ -62,6 +80,21 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
+            Text(
+              "Hello, $userName!",
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Let's add your first account",
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 24),
+
+
             TextField(
               controller: accountNameController,
               decoration: const InputDecoration(

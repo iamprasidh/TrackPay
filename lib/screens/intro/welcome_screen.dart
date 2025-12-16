@@ -20,25 +20,24 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     super.dispose();
   }
 
-void _saveNameAndContinue() async {
-  String name = nameController.text.trim();
-  
-  // If user skips, default to "User"
-  if (name.isEmpty) {
-    name = "User";
-  }
+      void _saveNameAndContinue() async {
+        String name = nameController.text.trim();
 
-  // Save name to Hive
-  final box = await Hive.openBox('user');
-  await box.put('name', name);
+        // Default to "User" only if empty
+        if (name.isEmpty) name = "User";
 
-  // Navigate to Add Account Screen
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const AddAccountScreen()),
-  );
-}
+        // Open box
+        final box = await Hive.openBox('user');
 
+        // Save the name
+        await box.put('name', name);
+
+        // Navigate
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AddAccountScreen()),
+        );
+      }
 
   @override
   Widget build(BuildContext context) {
