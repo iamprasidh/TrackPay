@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trackpay/models/transaction_type.dart';
 
 import '../../providers/dashboard/dashboard_provider.dart';
-import '../../models/transaction.dart';
 import '../transactions/add_transaction_screen.dart'; 
 
 class DashboardScreen extends ConsumerWidget {
