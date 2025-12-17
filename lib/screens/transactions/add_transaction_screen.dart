@@ -18,18 +18,16 @@ class AddTransactionScreen extends ConsumerStatefulWidget {
       _AddTransactionScreenState();
 }
 
-class _AddTransactionScreenState
-    extends ConsumerState<AddTransactionScreen> {
-  final TextEditingController amountController = TextEditingController();
-  final TextEditingController noteController = TextEditingController();
-
+class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
+  final amountController = TextEditingController();
+  final noteController = TextEditingController();
   final uuid = const Uuid();
 
   DateTime selectedDate = DateTime.now();
   TransactionType type = TransactionType.expense;
 
   Account? selectedAccount;
-  Category? selectedCategory;
+  String? selectedCategoryId;
   String? selectedSubCategory;
 
   @override
@@ -52,22 +50,61 @@ class _AddTransactionScreenState
     }
   }
 
+  void _addCategory() {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Add Category"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: "Category name",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+
+              final category = Category(
+                id: uuid.v4(),
+                categoryName: name,
+                subCategories: [],
+              );
+
+              await ref
+                  .read(categoryNotifierProvider.notifier)
+                  .addCategory(category);
+
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _addSubCategory(Category category) {
-    final TextEditingController subController = TextEditingController();
+    final controller = TextEditingController();
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text("Add subcategory to ${category.categoryName}"),
         content: TextField(
-          controller: subController,
-          decoration:
-              const InputDecoration(labelText: "Subcategory name"),
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: "Subcategory name",
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () async {
-              final sub = subController.text.trim();
+              final sub = controller.text.trim();
               if (sub.isEmpty) return;
 
               if (category.subCategories.contains(sub)) {
@@ -75,7 +112,7 @@ class _AddTransactionScreenState
                 return;
               }
 
-              final updatedCategory = Category(
+              final updated = Category(
                 id: category.id,
                 categoryName: category.categoryName,
                 subCategories: [...category.subCategories, sub],
@@ -83,7 +120,7 @@ class _AddTransactionScreenState
 
               await ref
                   .read(categoryNotifierProvider.notifier)
-                  .updateCategory(updatedCategory);
+                  .updateCategory(updated);
 
               Navigator.pop(context);
             },
@@ -97,15 +134,18 @@ class _AddTransactionScreenState
   void _saveTransaction() async {
     if (amountController.text.isEmpty ||
         selectedAccount == null ||
-        selectedCategory == null) {
+        selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Fill all required fields")),
       );
       return;
     }
 
-    if (selectedCategory!.subCategories.isNotEmpty &&
-        selectedSubCategory == null) {
+    final category = ref
+        .read(categoryNotifierProvider)
+        .firstWhere((c) => c.id == selectedCategoryId);
+
+    if (category.subCategories.isNotEmpty && selectedSubCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Select a subcategory")),
       );
@@ -118,13 +158,12 @@ class _AddTransactionScreenState
       transactionType: type,
       amount: double.tryParse(amountController.text) ?? 0,
       accountId: selectedAccount!.id,
-      categoryId: selectedCategory!.id,
+      categoryId: category.id,
       subCategoryName: selectedSubCategory,
       note: noteController.text,
     );
 
     await ref.read(transactionProvider.notifier).addTransaction(transaction);
-
     Navigator.pop(context);
   }
 
@@ -133,13 +172,17 @@ class _AddTransactionScreenState
     final accounts = ref.watch(accountNotifierProvider);
     final categories = ref.watch(categoryNotifierProvider);
 
+ final selectedCategory = selectedCategoryId == null
+    ? null
+    : categories.firstWhere((c) => c.id == selectedCategoryId);
+
     return Scaffold(
       appBar: AppBar(title: const Text("Add Transaction")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            /// 🔹 Income / Expense toggle
+            /// Expense / Income toggle
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -161,23 +204,21 @@ class _AddTransactionScreenState
 
             const SizedBox(height: 16),
 
-            /// 🔹 Date
+            /// Date picker
             ListTile(
               title: const Text("Date"),
-              subtitle:
-                  Text("${selectedDate.toLocal()}".split(' ')[0]),
+              subtitle: Text("${selectedDate.toLocal()}".split(' ')[0]),
               trailing: const Icon(Icons.calendar_today),
               onTap: _pickDate,
             ),
 
             const SizedBox(height: 16),
 
-            /// 🔹 Account
+            /// Select Account
             DropdownButtonFormField<Account>(
               value: selectedAccount,
               hint: const Text("Select Account"),
-              onChanged: (val) =>
-                  setState(() => selectedAccount = val),
+              onChanged: (val) => setState(() => selectedAccount = val),
               items: accounts
                   .map((a) => DropdownMenuItem(
                         value: a,
@@ -188,74 +229,76 @@ class _AddTransactionScreenState
 
             const SizedBox(height: 16),
 
-            /// 🔹 Category + Subcategory
+            /// Select Category
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Column(
-                    children: [
-                      DropdownButtonFormField<Category>(
-                        value: selectedCategory,
-                        hint: const Text("Select Category"),
-                        onChanged: (val) {
-                          setState(() {
-                            selectedCategory = val;
-                            selectedSubCategory = null;
-                          });
-                        },
-                        items: categories
-                            .map((c) => DropdownMenuItem(
-                                  value: c,
-                                  child: Text(c.categoryName),
-                                ))
-                            .toList(),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      if (selectedCategory != null &&
-                          selectedCategory!.subCategories.isNotEmpty)
-                        DropdownButtonFormField<String>(
-                          value: selectedSubCategory,
-                          hint: const Text("Select Subcategory"),
-                          onChanged: (val) => setState(
-                              () => selectedSubCategory = val),
-                          items: selectedCategory!.subCategories
-                              .map((sub) => DropdownMenuItem(
-                                    value: sub,
-                                    child: Text(sub),
-                                  ))
-                              .toList(),
-                        ),
-                    ],
+                  child: DropdownButtonFormField<String>(
+                    value: selectedCategoryId,
+                    hint: const Text("Select Category"),
+                    onChanged: (val) {
+                      setState(() {
+                        selectedCategoryId = val;
+                        selectedSubCategory = null;
+                      });
+                    },
+                    items: categories
+                        .map((c) => DropdownMenuItem(
+                              value: c.id,
+                              child: Text(c.categoryName),
+                            ))
+                        .toList(),
                   ),
                 ),
-
                 const SizedBox(width: 8),
-
                 IconButton(
                   icon: const Icon(Icons.add),
-                  onPressed: selectedCategory == null
-                      ? null
-                      : () => _addSubCategory(selectedCategory!),
+                  onPressed: _addCategory,
                 ),
               ],
             ),
 
+            if (selectedCategory != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: selectedCategory.subCategories.isNotEmpty
+                        ? DropdownButtonFormField<String>(
+                            value: selectedSubCategory,
+                            hint: const Text("Select Subcategory"),
+                            onChanged: (val) =>
+                                setState(() => selectedSubCategory = val),
+                            items: selectedCategory.subCategories
+                                .map((sub) => DropdownMenuItem(
+                                      value: sub,
+                                      child: Text(sub),
+                                    ))
+                                .toList(),
+                          )
+                        : const Text("No subcategories yet"),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () => _addSubCategory(selectedCategory),
+                  ),
+                ],
+              ),
+            ],
+
             const SizedBox(height: 16),
 
-            /// 🔹 Amount
+            /// Amount
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
-              decoration:
-                  const InputDecoration(labelText: "Amount"),
+              decoration: const InputDecoration(labelText: "Amount"),
             ),
 
             const SizedBox(height: 16),
 
-            /// 🔹 Note
+            /// Note
             TextField(
               controller: noteController,
               decoration:
@@ -264,7 +307,7 @@ class _AddTransactionScreenState
 
             const SizedBox(height: 32),
 
-            /// 🔹 Save
+            /// Save
             ElevatedButton(
               onPressed: _saveTransaction,
               child: const Text("Save Transaction"),
