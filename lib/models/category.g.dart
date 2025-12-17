@@ -19,7 +19,7 @@ class CategoryAdapter extends TypeAdapter<Category> {
     return Category(
       id: fields[0] as String,
       categoryName: fields[1] as String,
-      subCategories: (fields[2] as List?)?.cast<String>(),
+      subCategories: (fields[2] as List).cast<String>(),
     );
   }
 
