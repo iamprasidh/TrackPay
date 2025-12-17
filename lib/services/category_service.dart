@@ -9,9 +9,17 @@ class CategoryService{
   }
 
   static Future<List<Category>> getCategories() async {
-  final box = await openBox();
-  return box.values.toList();
-}
+    try {
+      final box = await openBox();
+      return box.values.whereType<Category>().toList();
+    } catch (e) {
+      // If there's a type error, clear the box and return empty list
+      print('Error loading categories: $e');
+      final box = await Hive.openBox<Category>(boxName);
+      await box.clear();
+      return [];
+    }
+  }
 
   static Future<void> addCategory(Category category) async {
     final box = await openBox();

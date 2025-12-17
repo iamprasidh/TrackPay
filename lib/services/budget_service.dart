@@ -9,9 +9,17 @@ class BudgetService {
   }
 
 static Future<List<Budget>> getBudgets() async {
-  final box = await openBox();
-  return box.values.toList();
-}
+    try {
+      final box = await openBox();
+      return box.values.whereType<Budget>().toList();
+    } catch (e) {
+      // If there's a type error, clear the box and return empty list
+      print('Error loading budgets: $e');
+      final box = await Hive.openBox<Budget>(boxName);
+      await box.clear();
+      return [];
+    }
+  }
 
 
   static Future<void> addBudget(Budget budget) async {

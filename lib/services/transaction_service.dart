@@ -9,9 +9,17 @@ class TransactionService {
   }
 
   static Future<List<Transaction>> getTransactions() async {
-  final box = await Hive.openBox<Transaction>(boxName);
-  return box.values.toList();
-}
+    try {
+      final box = await Hive.openBox<Transaction>(boxName);
+      return box.values.whereType<Transaction>().toList();
+    } catch (e) {
+      // If there's a type error, clear the box and return empty list
+      print('Error loading transactions: $e');
+      final box = await Hive.openBox<Transaction>(boxName);
+      await box.clear();
+      return [];
+    }
+  }
 
   static Future<void> addTransaction(Transaction transaction) async {
     final box = await openBox();
