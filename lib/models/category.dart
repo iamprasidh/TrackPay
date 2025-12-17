@@ -6,13 +6,13 @@ class Category {
   @HiveField(0)
   final String id;
   @HiveField(1)
-  final String CategoryName;
+  final String categoryName;
   @HiveField(2)
-  final String? subCategoryName;
+  final List<String> subCategories;
 
   Category({
     required this.id,
-    required this.CategoryName,
-    this.subCategoryName,
-  });
+    required this.categoryName,
+    List<String>? subCategories,
+  }) : subCategories = subCategories ?? [];
 }
