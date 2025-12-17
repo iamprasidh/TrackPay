@@ -24,15 +24,20 @@ class Transaction {
   final double amount;
 
   @HiveField(6)
+  final String? subCategoryName;
+
+  @HiveField(7)
   final String? note;
 
+  
   Transaction({
     required this.id,
-    DateTime? date,
-    required this.accountId,
-    required this.categoryId,
+    required this.date,
     required this.transactionType,
     required this.amount,
+    required this.accountId,
+    required this.categoryId,
+    this.subCategoryName,
     this.note,
-  }) : date = date ?? DateTime.now();
+  });
 }
