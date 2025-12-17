@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'categories_screen.dart';
+import 'accounts_screen.dart';
 import '../../providers/settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -49,6 +50,18 @@ class SettingsScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+              );
+            },
+          ),
+
+          /// 🔹 Accounts management
+          ListTile(
+            leading: const Icon(Icons.account_balance_wallet),
+            title: const Text("Manage Accounts"),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AccountsScreen()),
               );
             },
           ),
