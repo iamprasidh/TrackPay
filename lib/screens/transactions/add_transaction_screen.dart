@@ -68,7 +68,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
   void _addOrUpdateCategory({Category? existing}) {
     final TextEditingController catController = TextEditingController(
-        text: existing != null ? existing.CategoryName : '');
+        text: existing != null ? existing.categoryName : '');
     final TextEditingController subCatController = TextEditingController(
         text: existing != null ? existing.subCategoryName ?? '' : '');
     showDialog(
@@ -94,7 +94,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               final id = existing?.id ?? const Uuid().v4();
               final category = Category(
                 id: id,
-                CategoryName: catController.text,
+                categoryName: catController.text,
                 subCategoryName:
                     subCatController.text.isEmpty ? null : subCatController.text,
               );
@@ -186,7 +186,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                         .map((c) => DropdownMenuItem(
                               value: c,
                               child: Text(
-                                  "${c.CategoryName}${c.subCategoryName != null ? ' > ${c.subCategoryName}' : ''}"),
+                                  "${c.categoryName}${c.subCategoryName != null ? ' > ${c.subCategoryName}' : ''}"),
                             ))
                         .toList(),
                   ),
