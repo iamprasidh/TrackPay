@@ -5,7 +5,14 @@ class TransactionService {
   static const String boxName = "transactions";
 
   static Future<Box<Transaction>> openBox() async {
-    return await Hive.openBox<Transaction>(boxName);
+    try {
+      return await Hive.openBox<Transaction>(boxName);
+    } catch (e) {
+      // If there's a corruption error when opening the box, delete and recreate it
+      print('Error opening transaction box: \$e');
+      await Hive.deleteBoxFromDisk(boxName);
+      return await Hive.openBox<Transaction>(boxName);
+    }
   }
 
   static Future<List<Transaction>> getTransactions() async {

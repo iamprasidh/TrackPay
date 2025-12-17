@@ -5,7 +5,14 @@ class BudgetService {
   static const String boxName = "budgets";
 
   static Future<Box<Budget>> openBox() async {
-    return await Hive.openBox<Budget>(boxName);
+    try {
+      return await Hive.openBox<Budget>(boxName);
+    } catch (e) {
+      // If there's a corruption error when opening the box, delete and recreate it
+      print('Error opening budget box: \$e');
+      await Hive.deleteBoxFromDisk(boxName);
+      return await Hive.openBox<Budget>(boxName);
+    }
   }
 
 static Future<List<Budget>> getBudgets() async {
