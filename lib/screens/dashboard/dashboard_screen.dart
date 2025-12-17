@@ -4,6 +4,7 @@ import 'package:trackpay/models/transaction_type.dart';
 
 import '../../providers/dashboard/dashboard_provider.dart';
 import '../transactions/add_transaction_screen.dart'; 
+import '../settings/settings_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -16,6 +17,17 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('TrackPay'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -35,23 +47,19 @@ class DashboardScreen extends ConsumerWidget {
               children: [
                 _StatTile(
                   title: "Balance",
-                  value:
-                      "₹${ref.watch(balanceProvider).toStringAsFixed(2)}",
+                  value: "₹${ref.watch(balanceProvider).toStringAsFixed(2)}",
                 ),
                 _StatTile(
                   title: "Income",
-                  value:
-                      "₹${ref.watch(totalIncomeProvider).toStringAsFixed(2)}",
+                  value: "₹${ref.watch(totalIncomeProvider).toStringAsFixed(2)}",
                 ),
                 _StatTile(
                   title: "Expense",
-                  value:
-                      "₹${ref.watch(totalExpenseProvider).toStringAsFixed(2)}",
+                  value: "₹${ref.watch(totalExpenseProvider).toStringAsFixed(2)}",
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 16),
 
           // 🔹 TRANSACTIONS LIST
@@ -68,7 +76,6 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 8),
 
           Expanded(
@@ -82,16 +89,14 @@ class DashboardScreen extends ConsumerWidget {
                         title: Text(
                           "₹${t.amount}",
                           style: TextStyle(
-                            color: t.transactionType ==
-                                    TransactionType.income
+                            color: t.transactionType == TransactionType.income
                                 ? Colors.green
                                 : Colors.red,
                           ),
                         ),
                         subtitle: Text(t.note ?? ''),
                         trailing: Text(
-                          t.transactionType ==
-                                  TransactionType.income
+                          t.transactionType == TransactionType.income
                               ? "Income"
                               : "Expense",
                         ),
@@ -101,14 +106,11 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const AddTransactionScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
           );
         },
         child: const Icon(Icons.add),

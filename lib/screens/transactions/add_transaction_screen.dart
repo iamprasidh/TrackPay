@@ -59,9 +59,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         title: const Text("Add Category"),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: "Category name",
-          ),
+          decoration: const InputDecoration(labelText: "Category name"),
         ),
         actions: [
           TextButton(
@@ -97,9 +95,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         title: Text("Add subcategory to ${category.categoryName}"),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: "Subcategory name",
-          ),
+          decoration: const InputDecoration(labelText: "Subcategory name"),
         ),
         actions: [
           TextButton(
@@ -135,9 +131,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     if (amountController.text.isEmpty ||
         selectedAccount == null ||
         selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Fill all required fields")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Fill all required fields")));
       return;
     }
 
@@ -146,9 +142,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         .firstWhere((c) => c.id == selectedCategoryId);
 
     if (category.subCategories.isNotEmpty && selectedSubCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Select a subcategory")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Select a subcategory")));
       return;
     }
 
@@ -172,9 +168,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final accounts = ref.watch(accountNotifierProvider);
     final categories = ref.watch(categoryNotifierProvider);
 
- final selectedCategory = selectedCategoryId == null
-    ? null
-    : categories.firstWhere((c) => c.id == selectedCategoryId);
+    final selectedCategory = selectedCategoryId == null
+        ? null
+        : categories.firstWhere((c) => c.id == selectedCategoryId);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Add Transaction")),
@@ -216,14 +212,14 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
             /// Select Account
             DropdownButtonFormField<Account>(
-              value: selectedAccount,
+              initialValue: selectedAccount,
               hint: const Text("Select Account"),
               onChanged: (val) => setState(() => selectedAccount = val),
               items: accounts
-                  .map((a) => DropdownMenuItem(
-                        value: a,
-                        child: Text(a.accountName),
-                      ))
+                  .map(
+                    (a) =>
+                        DropdownMenuItem(value: a, child: Text(a.accountName)),
+                  )
                   .toList(),
             ),
 
@@ -234,7 +230,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: selectedCategoryId,
+                    initialValue: selectedCategoryId,
                     hint: const Text("Select Category"),
                     onChanged: (val) {
                       setState(() {
@@ -243,10 +239,12 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                       });
                     },
                     items: categories
-                        .map((c) => DropdownMenuItem(
-                              value: c.id,
-                              child: Text(c.categoryName),
-                            ))
+                        .map(
+                          (c) => DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.categoryName),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -265,15 +263,17 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   Expanded(
                     child: selectedCategory.subCategories.isNotEmpty
                         ? DropdownButtonFormField<String>(
-                            value: selectedSubCategory,
+                            initialValue: selectedSubCategory,
                             hint: const Text("Select Subcategory"),
                             onChanged: (val) =>
                                 setState(() => selectedSubCategory = val),
                             items: selectedCategory.subCategories
-                                .map((sub) => DropdownMenuItem(
-                                      value: sub,
-                                      child: Text(sub),
-                                    ))
+                                .map(
+                                  (sub) => DropdownMenuItem(
+                                    value: sub,
+                                    child: Text(sub),
+                                  ),
+                                )
                                 .toList(),
                           )
                         : const Text("No subcategories yet"),
@@ -301,8 +301,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             /// Note
             TextField(
               controller: noteController,
-              decoration:
-                  const InputDecoration(labelText: "Note (optional)"),
+              decoration: const InputDecoration(labelText: "Note (optional)"),
             ),
 
             const SizedBox(height: 32),

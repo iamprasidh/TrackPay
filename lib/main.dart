@@ -8,11 +8,13 @@ import './models/budget.dart';
 import './models/transaction.dart';
 import 'screens/launch/launch_screen.dart';
 import './models/transaction_type.dart';
+import './models/settings.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
+   Hive.registerAdapter(SettingsAdapter());
   Hive.registerAdapter(TransactionTypeAdapter());
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(AccountAdapter());
