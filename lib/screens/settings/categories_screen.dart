@@ -108,7 +108,7 @@ class CategoriesScreen extends ConsumerWidget {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             

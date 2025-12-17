@@ -9,7 +9,8 @@ final categoryNotifierProvider =
 
 class CategoryNotifier extends StateNotifier<List<Category>> {
   CategoryNotifier() : super([]) {
-    loadCategories();
+    // Load categories asynchronously
+    Future.microtask(() => loadCategories());
   }
 
   Future<void> loadCategories() async {

@@ -14,7 +14,7 @@ class CategoryService{
       return box.values.whereType<Category>().toList();
     } catch (e) {
       // If there's a type error, clear the box and return empty list
-      print('Error loading categories: $e');
+      print('Error loading categories: \$e');
       final box = await Hive.openBox<Category>(boxName);
       await box.clear();
       return [];
