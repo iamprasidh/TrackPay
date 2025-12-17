@@ -5,8 +5,16 @@ class AccountService{
   static const String boxName = "accounts";
 
     static Future<List<Account>> getAccounts() async {
-    final box = await Hive.openBox<Account>(boxName);
-    return box.values.toList();
+    try {
+      final box = await Hive.openBox<Account>(boxName);
+      return box.values.whereType<Account>().toList();
+    } catch (e) {
+      // If there's a type error, clear the box and return empty list
+      print('Error loading accounts: $e');
+      final box = await Hive.openBox<Account>(boxName);
+      await box.clear();
+      return [];
+    }
   }
 
   static Future<Box<Account>> openBox() async {

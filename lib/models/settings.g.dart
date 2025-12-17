@@ -17,18 +17,21 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Settings(
-      isDarkMode: fields[0] as bool,
-      currency: fields[1] as String,
+      userName: fields[0] as String,
+      isDarkMode: fields[1] as bool,
+      currency: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Settings obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
-      ..write(obj.isDarkMode)
+      ..write(obj.userName)
       ..writeByte(1)
+      ..write(obj.isDarkMode)
+      ..writeByte(2)
       ..write(obj.currency);
   }
 
