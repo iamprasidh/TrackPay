@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -79,8 +80,10 @@ class MyApp extends ConsumerWidget {
         foregroundColor: lightColorScheme.onSurface,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: baseTextTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
+        titleTextStyle: GoogleFonts.poppins(
+          textStyle: baseTextTheme.titleLarge,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
         ),
       ),
       // cardTheme removed to resolve linter type mismatch; cards inherit defaults.
@@ -137,8 +140,10 @@ class MyApp extends ConsumerWidget {
         foregroundColor: darkColorScheme.onSurface,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: baseTextTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
+        titleTextStyle: GoogleFonts.poppins(
+          textStyle: baseTextTheme.titleLarge,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
         ),
       ),
       // cardTheme removed to resolve linter type mismatch; cards inherit defaults.
