@@ -7,7 +7,10 @@ import '../../providers/settings_provider.dart';
 import '../../providers/transaction_provider.dart';
 
 class AnalyticsScreen extends ConsumerStatefulWidget {
-  const AnalyticsScreen({super.key});
+  final DateTime? initialMonth;
+  final TransactionType? filterType;
+
+  const AnalyticsScreen({super.key, this.initialMonth, this.filterType});
 
   @override
   ConsumerState<AnalyticsScreen> createState() => _AnalyticsScreenState();
@@ -20,7 +23,12 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   void initState() {
     super.initState();
     final now = DateTime.now();
-    _selectedMonth = DateTime(now.year, now.month);
+    if (widget.initialMonth != null) {
+      final m = widget.initialMonth!;
+      _selectedMonth = DateTime(m.year, m.month);
+    } else {
+      _selectedMonth = DateTime(now.year, now.month);
+    }
   }
 
   void _goToPreviousMonth() {
@@ -110,9 +118,11 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     }
 
     Widget buildSummaryCards() {
-      final colorScheme = Theme.of(context).colorScheme;
-      return Row(
-        children: [
+      final ft = widget.filterType;
+      final tiles = <Widget>[];
+
+      if (ft == null || ft == TransactionType.income) {
+        tiles.add(
           Expanded(
             child: _SummaryTile(
               title: 'Income',
@@ -121,7 +131,15 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               icon: Icons.trending_up_rounded,
             ),
           ),
-          const SizedBox(width: 12),
+        );
+      }
+
+      if (ft == null) {
+        tiles.add(const SizedBox(width: 12));
+      }
+
+      if (ft == null || ft == TransactionType.expense) {
+        tiles.add(
           Expanded(
             child: _SummaryTile(
               title: 'Expense',
@@ -130,11 +148,26 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               icon: Icons.trending_down_rounded,
             ),
           ),
-        ],
-      );
+        );
+      }
+
+      return Row(children: tiles);
     }
 
     Widget buildCategoryBreakdown() {
+      // Category breakdown is only relevant for expenses
+      if (widget.filterType == TransactionType.income) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Text(
+              'Category breakdown is available for expenses only',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        );
+      }
+
       if (expenseByCategory.isEmpty) {
         return const Center(
           child: Padding(
@@ -225,12 +258,18 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         final start = DateTime(date.year, date.month);
         final end = DateTime(date.year, date.month + 1);
 
-        double monthExpenseTotal = 0;
+        double monthTotal = 0;
         for (final t in transactions) {
           final d = t.date;
           if (!d.isBefore(start) && d.isBefore(end)) {
-            if (t.transactionType == TransactionType.expense) {
-              monthExpenseTotal += t.amount;
+            if (widget.filterType == TransactionType.income) {
+              if (t.transactionType == TransactionType.income) {
+                monthTotal += t.amount;
+              }
+            } else {
+              if (t.transactionType == TransactionType.expense) {
+                monthTotal += t.amount;
+              }
             }
           }
         }
@@ -238,20 +277,20 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         lastSixMonths.add(
           _MonthStat(
             label: monthLabel(date),
-            totalExpense: monthExpenseTotal,
+            totalExpense: monthTotal,
           ),
         );
       }
 
-      final maxExpense = lastSixMonths
+      final maxValue = lastSixMonths
           .fold<double>(0, (max, s) => s.totalExpense > max ? s.totalExpense : max);
 
-      if (maxExpense == 0) {
+      if (maxValue == 0) {
         return const Center(
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: Text(
-              'No spending trend yet. Start adding expenses!',
+              'No trend yet. Start adding transactions!',
               style: TextStyle(color: Colors.grey),
             ),
           ),
@@ -260,7 +299,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
 
       return Column(
         children: lastSixMonths.map((stat) {
-          final barValue = (stat.totalExpense / maxExpense).clamp(0.0, 1.0);
+          final barValue = (stat.totalExpense / maxValue).clamp(0.0, 1.0);
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(
@@ -298,9 +337,16 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       );
     }
 
+    final ft = widget.filterType;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analytics'),
+        title: Text(
+          ft == null
+              ? 'Analytics'
+              : (ft == TransactionType.income
+                  ? 'Income Analytics'
+                  : 'Expense Analytics'),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -328,7 +374,11 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Overview of your spending and income',
+                          ft == null
+                              ? 'Overview of your spending and income'
+                              : (ft == TransactionType.income
+                                  ? 'Overview of your income'
+                                  : 'Overview of your spending'),
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -346,7 +396,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                 buildSummaryCards(),
                 const SizedBox(height: 24),
                 Text(
-                  'Spending by category',
+                  ft == TransactionType.income
+                      ? 'Income by category'
+                      : 'Spending by category',
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
@@ -361,7 +413,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Spending trend (last 6 months)',
+                  ft == TransactionType.income
+                      ? 'Income trend (last 6 months)'
+                      : 'Spending trend (last 6 months)',
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
