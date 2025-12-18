@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trackpay/models/transaction_type.dart';
 
 import '../../providers/dashboard/dashboard_provider.dart';
+import '../../providers/account_provider.dart';
+import '../../providers/category_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../utils/app_snackbar.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../settings/settings_screen.dart';
 
@@ -12,8 +16,23 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transactions = ref.watch(recentTransactionsProvider);
+    final accounts = ref.watch(accountNotifierProvider);
+    final categories = ref.watch(categoryNotifierProvider);
+    final settings = ref.watch(settingsProvider);
 
     final colorScheme = Theme.of(context).colorScheme;
+
+    String formatCurrency(double value) {
+      String code = settings.currency.isNotEmpty ? settings.currency : 'INR';
+      final symbol = switch (code.toUpperCase()) {
+        'INR' => '₹',
+        'USD' => '\$',
+        'EUR' => '€',
+        'GBP' => '£',
+        _ => '$code ',
+      };
+      return '$symbol${value.toStringAsFixed(2)}';
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -42,8 +61,7 @@ class DashboardScreen extends ConsumerWidget {
                   Expanded(
                     child: _StatTile(
                       title: "Balance",
-                      value:
-                          "₹${ref.watch(balanceProvider).toStringAsFixed(2)}",
+                      value: formatCurrency(ref.watch(balanceProvider)),
                       icon: Icons.account_balance_wallet_outlined,
                       color: colorScheme.primary,
                     ),
@@ -53,7 +71,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: _StatTile(
                       title: "Income",
                       value:
-                          "₹${ref.watch(totalIncomeProvider).toStringAsFixed(2)}",
+                          formatCurrency(ref.watch(totalIncomeProvider)),
                       icon: Icons.trending_up_rounded,
                       color: Colors.green,
                     ),
@@ -63,7 +81,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: _StatTile(
                       title: "Expense",
                       value:
-                          "₹${ref.watch(totalExpenseProvider).toStringAsFixed(2)}",
+                          formatCurrency(ref.watch(totalExpenseProvider)),
                       icon: Icons.trending_down_rounded,
                       color: Colors.redAccent,
                     ),
@@ -85,10 +103,24 @@ class DashboardScreen extends ConsumerWidget {
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text("No transactions yet", style: TextStyle(color: Colors.grey)),
+                        children: [
+                          const Icon(Icons.receipt_long_outlined,
+                              size: 48, color: Colors.grey),
+                          const SizedBox(height: 8),
+                          const Text("No transactions yet",
+                              style: TextStyle(color: Colors.grey)),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const AddTransactionScreen()),
+                              );
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add your first transaction'),
+                          ),
                         ],
                       ),
                     )
@@ -99,6 +131,22 @@ class DashboardScreen extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final t = transactions[index];
                         final isIncome = t.transactionType == TransactionType.income;
+
+                        final accountName = accounts
+                            .firstWhere(
+                              (a) => a.id == t.accountId,
+                              orElse: () =>
+                                  accounts.isNotEmpty ? accounts.first : null,
+                            )
+                            ?.accountName;
+
+                        final categoryName = categories
+                            .firstWhere(
+                              (c) => c.id == t.categoryId,
+                              orElse: () =>
+                                  categories.isNotEmpty ? categories.first : null,
+                            )
+                            ?.categoryName;
 
                         return Card(
                           child: ListTile(
@@ -113,13 +161,30 @@ class DashboardScreen extends ConsumerWidget {
                               ),
                             ),
                             title: Text(
-                              "₹${t.amount}",
+                              formatCurrency(t.amount),
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: isIncome ? Colors.green : Colors.redAccent,
                               ),
                             ),
-                            subtitle: Text(t.note ?? ''),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (t.note != null && t.note!.isNotEmpty)
+                                  Text(t.note!),
+                                if (accountName != null || categoryName != null)
+                                  Text(
+                                    [
+                                      if (accountName != null) accountName,
+                                      if (categoryName != null) categoryName,
+                                    ].join(' • '),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: Colors.grey),
+                                  ),
+                              ],
+                            ),
                             trailing: Chip(
                               label: Text(isIncome ? 'Income' : 'Expense'),
                               backgroundColor: (isIncome

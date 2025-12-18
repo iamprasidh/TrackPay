@@ -14,15 +14,21 @@ import 'screens/launch/launch_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+  };
+
   await Hive.initFlutter();
 
-   Hive.registerAdapter(SettingsAdapter());
+  Hive.registerAdapter(SettingsAdapter());
   Hive.registerAdapter(TransactionTypeAdapter());
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(AccountAdapter());
   Hive.registerAdapter(CategoryAdapter());
   Hive.registerAdapter(TransactionAdapter());
   Hive.registerAdapter(BudgetAdapter());
+
   runApp(
     const ProviderScope(
       child: MyApp(),

@@ -9,6 +9,8 @@ import '../../models/transaction_type.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../utils/app_snackbar.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
   const AddTransactionScreen({super.key});
@@ -128,12 +130,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   }
 
   void _saveTransaction() async {
-    if (amountController.text.isEmpty ||
+    final rawAmount = amountController.text.trim();
+
+    if (rawAmount.isEmpty ||
         selectedAccount == null ||
         selectedCategoryId == null) {
-      ScaffoldMessenger.of(
+      AppSnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Fill all required fields")));
+        message: "Please fill all required fields",
+        isError: true,
+      );
+      return;
+    }
+
+    final parsedAmount = double.tryParse(rawAmount);
+    if (parsedAmount == null || parsedAmount <= 0) {
+      AppSnackbar.show(
+        context,
+        message: "Enter a valid amount greater than 0",
+        isError: true,
+      );
       return;
     }
 
@@ -152,21 +168,32 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       id: uuid.v4(),
       date: selectedDate,
       transactionType: type,
-      amount: double.tryParse(amountController.text) ?? 0,
+      amount: parsedAmount,
       accountId: selectedAccount!.id,
       categoryId: category.id,
       subCategoryName: selectedSubCategory,
-      note: noteController.text,
+      note: noteController.text.trim(),
     );
 
-    await ref.read(transactionProvider.notifier).addTransaction(transaction);
-    Navigator.pop(context);
+    try {
+      await ref.read(transactionProvider.notifier).addTransaction(transaction);
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.show(
+        context,
+        message: "Failed to save transaction. Please try again.",
+        isError: true,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final accounts = ref.watch(accountNotifierProvider);
     final categories = ref.watch(categoryNotifierProvider);
+    final settings = ref.watch(settingsProvider);
 
     final selectedCategory = selectedCategoryId == null
         ? null
