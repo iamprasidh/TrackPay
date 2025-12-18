@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trackpay/models/transaction_type.dart';
 
 import '../../providers/dashboard/dashboard_provider.dart';
-import '../transactions/add_transaction_screen.dart'; 
+import '../transactions/add_transaction_screen.dart';
 import '../settings/settings_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -51,11 +51,13 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 _StatTile(
                   title: "Income",
-                  value: "₹${ref.watch(totalIncomeProvider).toStringAsFixed(2)}",
+                  value:
+                      "₹${ref.watch(totalIncomeProvider).toStringAsFixed(2)}",
                 ),
                 _StatTile(
                   title: "Expense",
-                  value: "₹${ref.watch(totalExpenseProvider).toStringAsFixed(2)}",
+                  value:
+                      "₹${ref.watch(totalExpenseProvider).toStringAsFixed(2)}",
                 ),
               ],
             ),
@@ -69,10 +71,7 @@ class DashboardScreen extends ConsumerWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 "Recent Transactions",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -123,10 +122,7 @@ class _StatTile extends StatelessWidget {
   final String title;
   final String value;
 
-  const _StatTile({
-    required this.title,
-    required this.value,
-  });
+  const _StatTile({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -134,18 +130,12 @@ class _StatTile extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.black54,
-          ),
+          style: const TextStyle(fontSize: 14, color: Colors.black54),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ],
     );

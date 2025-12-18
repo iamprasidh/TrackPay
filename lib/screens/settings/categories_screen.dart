@@ -39,7 +39,11 @@ class CategoriesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategoryCard(Category category, BuildContext context, WidgetRef ref) {
+  Widget _buildCategoryCard(
+    Category category,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -63,7 +67,8 @@ class CategoriesScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit, size: 20),
-                  onPressed: () => _showEditCategoryDialog(context, ref, category),
+                  onPressed: () =>
+                      _showEditCategoryDialog(context, ref, category),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, size: 20, color: Colors.red),
@@ -71,9 +76,9 @@ class CategoriesScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Subcategories tree visualization
             if (category.subCategories.isNotEmpty)
               Column(
@@ -93,7 +98,11 @@ class CategoriesScreen extends ConsumerWidget {
                       padding: const EdgeInsets.only(left: 36, bottom: 4),
                       child: Row(
                         children: [
-                          const Icon(Icons.arrow_right, size: 16, color: Colors.green),
+                          const Icon(
+                            Icons.arrow_right,
+                            size: 16,
+                            color: Colors.green,
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -102,8 +111,17 @@ class CategoriesScreen extends ConsumerWidget {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.remove_circle_outline, size: 16, color: Colors.red),
-                            onPressed: () => _removeSubcategory(context, ref, category, subcategory),
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              size: 16,
+                              color: Colors.red,
+                            ),
+                            onPressed: () => _removeSubcategory(
+                              context,
+                              ref,
+                              category,
+                              subcategory,
+                            ),
                           ),
                         ],
                       ),
@@ -111,12 +129,13 @@ class CategoriesScreen extends ConsumerWidget {
                   }),
                 ],
               ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Add subcategory button
             TextButton(
-              onPressed: () => _showAddSubcategoryDialog(context, ref, category),
+              onPressed: () =>
+                  _showAddSubcategoryDialog(context, ref, category),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -134,7 +153,7 @@ class CategoriesScreen extends ConsumerWidget {
 
   void _showAddCategoryDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -160,7 +179,9 @@ class CategoriesScreen extends ConsumerWidget {
                   categoryName: name,
                   subCategories: [],
                 );
-                ref.read(categoryNotifierProvider.notifier).addCategory(newCategory);
+                ref
+                    .read(categoryNotifierProvider.notifier)
+                    .addCategory(newCategory);
                 Navigator.pop(context);
               }
             },
@@ -171,9 +192,13 @@ class CategoriesScreen extends ConsumerWidget {
     );
   }
 
-  void _showEditCategoryDialog(BuildContext context, WidgetRef ref, Category category) {
+  void _showEditCategoryDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Category category,
+  ) {
     final controller = TextEditingController(text: category.categoryName);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -199,7 +224,9 @@ class CategoriesScreen extends ConsumerWidget {
                   categoryName: name,
                   subCategories: category.subCategories,
                 );
-                ref.read(categoryNotifierProvider.notifier).updateCategory(updatedCategory);
+                ref
+                    .read(categoryNotifierProvider.notifier)
+                    .updateCategory(updatedCategory);
                 Navigator.pop(context);
               }
             },
@@ -210,9 +237,13 @@ class CategoriesScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddSubcategoryDialog(BuildContext context, WidgetRef ref, Category category) {
+  void _showAddSubcategoryDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Category category,
+  ) {
     final controller = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -233,13 +264,17 @@ class CategoriesScreen extends ConsumerWidget {
             onPressed: () {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
-                final updatedSubcategories = List<String>.from(category.subCategories)..add(name);
+                final updatedSubcategories = List<String>.from(
+                  category.subCategories,
+                )..add(name);
                 final updatedCategory = Category(
                   id: category.id,
                   categoryName: category.categoryName,
                   subCategories: updatedSubcategories,
                 );
-                ref.read(categoryNotifierProvider.notifier).updateCategory(updatedCategory);
+                ref
+                    .read(categoryNotifierProvider.notifier)
+                    .updateCategory(updatedCategory);
                 Navigator.pop(context);
               }
             },
@@ -250,8 +285,14 @@ class CategoriesScreen extends ConsumerWidget {
     );
   }
 
-  void _removeSubcategory(BuildContext context, WidgetRef ref, Category category, String subcategory) {
-    final updatedSubcategories = List<String>.from(category.subCategories)..remove(subcategory);
+  void _removeSubcategory(
+    BuildContext context,
+    WidgetRef ref,
+    Category category,
+    String subcategory,
+  ) {
+    final updatedSubcategories = List<String>.from(category.subCategories)
+      ..remove(subcategory);
     final updatedCategory = Category(
       id: category.id,
       categoryName: category.categoryName,
@@ -273,7 +314,9 @@ class CategoriesScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              ref.read(categoryNotifierProvider.notifier).deleteCategory(categoryId);
+              ref
+                  .read(categoryNotifierProvider.notifier)
+                  .deleteCategory(categoryId);
               Navigator.pop(context);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
