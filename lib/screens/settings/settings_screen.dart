@@ -15,55 +15,68 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
       body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          /// 🔹 User Name
-          ListTile(
-            title: const Text("User Name"),
-            subtitle: Text(settings.userName),
-            trailing: const Icon(Icons.edit),
-            onTap: () => _editUserName(context, ref, settings.userName),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.person_outline),
+                  title: const Text("User Name"),
+                  subtitle: Text(settings.userName),
+                  trailing: const Icon(Icons.edit_outlined),
+                  onTap: () => _editUserName(context, ref, settings.userName),
+                ),
+                const Divider(height: 0),
+                SwitchListTile.adaptive(
+                  secondary: const Icon(Icons.dark_mode_outlined),
+                  title: const Text("Dark Mode"),
+                  value: settings.isDarkMode,
+                  onChanged: (val) =>
+                      ref.read(settingsProvider.notifier).updateDarkMode(val),
+                ),
+                const Divider(height: 0),
+                ListTile(
+                  leading: const Icon(Icons.currency_rupee_outlined),
+                  title: const Text("Currency"),
+                  subtitle: Text(settings.currency),
+                  trailing: const Icon(Icons.edit_outlined),
+                  onTap: () => _changeCurrency(context, ref, settings.currency),
+                ),
+              ],
+            ),
           ),
 
-          /// 🔹 Dark Mode
-          SwitchListTile(
-            title: const Text("Dark Mode"),
-            value: settings.isDarkMode,
-            onChanged: (val) =>
-                ref.read(settingsProvider.notifier).updateDarkMode(val),
-          ),
+          const SizedBox(height: 16),
 
-          /// 🔹 Currency
-          ListTile(
-            title: const Text("Currency"),
-            subtitle: Text(settings.currency),
-            trailing: const Icon(Icons.edit),
-            onTap: () => _changeCurrency(context, ref, settings.currency),
-          ),
-
-          const Divider(),
-
-          /// 🔹 Categories management
-          ListTile(
-            leading: const Icon(Icons.category),
-            title: const Text("Manage Categories"),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CategoriesScreen()),
-              );
-            },
-          ),
-
-          /// 🔹 Accounts management
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet),
-            title: const Text("Manage Accounts"),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AccountsScreen()),
-              );
-            },
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.category_outlined),
+                  title: const Text("Manage Categories"),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 0),
+                ListTile(
+                  leading: const Icon(Icons.account_balance_wallet_outlined),
+                  title: const Text("Manage Accounts"),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AccountsScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),

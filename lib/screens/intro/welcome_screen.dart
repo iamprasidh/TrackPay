@@ -41,52 +41,59 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Welcome to TrackPay",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Welcome to TrackPay",
+                  style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "Enter your name (optional)",
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 8),
+                Text(
+                  "A simple, minimal way to track your money.",
+                  style: textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _saveNameAndContinue,
-                child: const Text("Continue"),
-              ),
+                const SizedBox(height: 32),
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: "Enter your name (optional)",
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saveNameAndContinue,
+                    child: const Text("Continue"),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () async {
+                    // Default name if user skips
+                    final box = await Hive.openBox('user');
+                    await box.put('name', 'User');
 
-              const SizedBox(height: 12),
-
-              TextButton(
-              onPressed: () async {
-                // Default name if user skips
-                final box = await Hive.openBox('user');
-                await box.put('name', 'User');
-
-                // Navigate to Add Account Screen
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AddAccountScreen()),
-                );
-              },
-              child: const Text("Skip"),
+                    // Navigate to Add Account Screen
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AddAccountScreen()),
+                    );
+                  },
+                  child: const Text("Skip"),
+                ),
+              ],
             ),
-            ],
           ),
         ),
       ),

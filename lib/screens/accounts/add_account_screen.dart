@@ -86,27 +86,29 @@ void _loadUserName() async {
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               "Hello, $userName!",
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               "Let's add your first account",
-              style: const TextStyle(fontSize: 16),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
-
 
             TextField(
               controller: accountNameController,
               decoration: const InputDecoration(
                 labelText: "Account Name (e.g., Bank, Cash)",
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
@@ -115,32 +117,50 @@ void _loadUserName() async {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: "Opening Balance (optional)",
-                border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _addAccount,
-              child: const Text("Add Account"),
-            ),
-
-            Expanded(
-                child: ListView.builder(
-                  itemCount: accounts.length,
-                  itemBuilder: (context, index) {
-                    final acc = accounts[index];
-                    return ListTile(
-                      title: Text(acc.accountName),
-                      subtitle: Text("Balance: ₹${acc.openingBalance.toStringAsFixed(2)}"),
-                    );
-                  },
-                ),
-              ),
-
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _finishSetup,
-              child: const Text("Finish Setup"),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _addAccount,
+                child: const Text("Add Account"),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+            Expanded(
+              child: accounts.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No accounts yet",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: accounts.length,
+                      itemBuilder: (context, index) {
+                        final acc = accounts[index];
+                        return Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.account_balance_wallet_outlined),
+                            title: Text(acc.accountName),
+                            subtitle: Text(
+                              "Balance: ₹${acc.openingBalance.toStringAsFixed(2)}",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _finishSetup,
+                child: const Text("Finish Setup"),
+              ),
             ),
           ],
         ),
