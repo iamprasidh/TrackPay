@@ -7,8 +7,10 @@ import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/list_extensions.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../settings/settings_screen.dart';
+import 'analytics_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -39,6 +41,16 @@ class DashboardScreen extends ConsumerWidget {
         title: const Text('TrackPay'),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.insights_outlined),
+            tooltip: 'Analytics',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
@@ -133,19 +145,11 @@ class DashboardScreen extends ConsumerWidget {
                         final isIncome = t.transactionType == TransactionType.income;
 
                         final accountName = accounts
-                            .firstWhere(
-                              (a) => a.id == t.accountId,
-                              orElse: () =>
-                                  accounts.isNotEmpty ? accounts.first : null,
-                            )
+                            .firstOrNull((a) => a.id == t.accountId)
                             ?.accountName;
 
                         final categoryName = categories
-                            .firstWhere(
-                              (c) => c.id == t.categoryId,
-                              orElse: () =>
-                                  categories.isNotEmpty ? categories.first : null,
-                            )
+                            .firstOrNull((c) => c.id == t.categoryId)
                             ?.categoryName;
 
                         return Card(
