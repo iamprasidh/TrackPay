@@ -21,8 +21,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  DateTime selectedMonth =
-      DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
   static const List<String> _monthNames = <String>[
     'January',
@@ -47,7 +46,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   void _nextMonth() {
     final now = DateTime.now();
-    final isBeforeOrEqualCurrent = selectedMonth.year < now.year ||
+    final isBeforeOrEqualCurrent =
+        selectedMonth.year < now.year ||
         (selectedMonth.year == now.year && selectedMonth.month < now.month);
     if (!isBeforeOrEqualCurrent) return;
     setState(() {
@@ -60,9 +60,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final ref = this.ref;
     final allTransactions = ref.watch(transactionProvider);
     final monthlyTransactions = allTransactions
-        .where((t) =>
-            t.date.year == selectedMonth.year &&
-            t.date.month == selectedMonth.month)
+        .where(
+          (t) =>
+              t.date.year == selectedMonth.year &&
+              t.date.month == selectedMonth.month,
+        )
         .toList();
     final monthlyIncome = monthlyTransactions
         .where((t) => t.transactionType == TransactionType.income)
@@ -96,17 +98,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              color: colorScheme.primary,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'TrackPay',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ],
+          children: [const SizedBox(width: 5), const Text('TrackPay')],
         ),
         centerTitle: false,
         actions: [
@@ -150,7 +142,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     tooltip: 'Next month',
                     onPressed: () {
                       final now = DateTime.now();
-                      final isCurrentMonth = selectedMonth.year == now.year &&
+                      final isCurrentMonth =
+                          selectedMonth.year == now.year &&
                           selectedMonth.month == now.month;
                       if (!isCurrentMonth) _nextMonth();
                     },
@@ -194,9 +187,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   title: "Income",
                                   value: formatCurrency(monthlyIncome),
                                   icon: Icons.trending_up_rounded,
-                                  color: Theme.of(context)
-                                      .extension<AppColors>()
-                                      ?.income ?? Theme.of(context).colorScheme.tertiary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).extension<AppColors>()?.income ??
+                                      Theme.of(context).colorScheme.tertiary,
                                 ),
                               ),
                             ),
@@ -228,9 +223,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     title: "Expense",
                                     value: formatCurrency(monthlyExpense),
                                     icon: Icons.trending_down_rounded,
-                                    color: Theme.of(context)
-                                        .extension<AppColors>()
-                                        ?.expense ?? Theme.of(context).colorScheme.error,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).extension<AppColors>()?.expense ??
+                                        Theme.of(context).colorScheme.error,
                                   ),
                                 ),
                               ),
@@ -257,15 +254,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             );
                           },
-                            child: SizedBox(
-                              width: 44,
-                              height: 44,
-                              child: Icon(
-                                Icons.insights_outlined,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                size: 22,
-                              ),
+                          child: SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Icon(
+                              Icons.insights_outlined,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 22,
                             ),
+                          ),
                         ),
                       ),
                     ],
@@ -301,10 +298,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 children: [
                   const Text(
                     "Closing Balance",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                   Text(
                     formatCurrency(monthlyNet),
@@ -326,7 +320,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Icon(
                             Icons.receipt_long_outlined,
                             size: 48,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -334,7 +330,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 ? "No transactions yet"
                                 : "No transactions",
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                           if (isCurrentMonth) ...[
@@ -349,8 +347,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   ),
                                 );
                               },
-                              child:
-                                  const Text('Add your first transaction'),
+                              child: const Text('Add your first transaction'),
                             ),
                           ],
                         ],
@@ -380,7 +377,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           if (subCategory != null && subCategory.isNotEmpty)
                             subCategory,
                         ].join(' > ');
-                        final formattedDate = '${t.date.day.toString().padLeft(2, '0')} '
+                        final formattedDate =
+                            '${t.date.day.toString().padLeft(2, '0')} '
                             '${_monthNames[t.date.month - 1]} '
                             '${t.date.year}';
 
@@ -388,27 +386,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: isIncome
-                                  ? (Theme.of(context)
-                                          .extension<AppColors>()
-                                          ?.income ??
-                                      Theme.of(context).colorScheme.tertiary)
-                                      .withOpacity(0.15)
-                                  : (Theme.of(context)
-                                          .extension<AppColors>()
-                                          ?.expense ??
-                                      Theme.of(context).colorScheme.error)
-                                      .withOpacity(0.15),
+                                  ? (Theme.of(
+                                              context,
+                                            ).extension<AppColors>()?.income ??
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.tertiary)
+                                        .withOpacity(0.15)
+                                  : (Theme.of(
+                                              context,
+                                            ).extension<AppColors>()?.expense ??
+                                            Theme.of(context).colorScheme.error)
+                                        .withOpacity(0.15),
                               child: Icon(
                                 isIncome
                                     ? Icons.trending_up_rounded
                                     : Icons.trending_down_rounded,
                                 color: isIncome
-                                    ? (Theme.of(context)
-                                            .extension<AppColors>()
-                                            ?.income ?? Theme.of(context).colorScheme.tertiary)
-                                    : (Theme.of(context)
-                                            .extension<AppColors>()
-                                            ?.expense ?? Theme.of(context).colorScheme.error),
+                                    ? (Theme.of(
+                                            context,
+                                          ).extension<AppColors>()?.income ??
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.tertiary)
+                                    : (Theme.of(
+                                            context,
+                                          ).extension<AppColors>()?.expense ??
+                                          Theme.of(context).colorScheme.error),
                               ),
                             ),
                             title: Text(
@@ -416,12 +420,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: isIncome
-                                    ? (Theme.of(context)
-                                            .extension<AppColors>()
-                                            ?.income ?? Theme.of(context).colorScheme.tertiary)
-                                    : (Theme.of(context)
-                                            .extension<AppColors>()
-                                            ?.expense ?? Theme.of(context).colorScheme.error),
+                                    ? (Theme.of(
+                                            context,
+                                          ).extension<AppColors>()?.income ??
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.tertiary)
+                                    : (Theme.of(
+                                            context,
+                                          ).extension<AppColors>()?.expense ??
+                                          Theme.of(context).colorScheme.error),
                               ),
                             ),
                             subtitle: Column(
@@ -430,9 +438,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 if (categoryPath.isNotEmpty)
                                   Text(
                                     categoryPath,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
                                   ),
                                 if (t.note != null && t.note!.isNotEmpty)
                                   Text(t.note!),
@@ -441,15 +449,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     if (accountName != null) accountName,
                                     formattedDate,
                                   ].join(' • '),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                       ),
-                              ),
+                                ),
                               ],
                             ),
                             trailing: PopupMenuButton<String>(
@@ -483,12 +489,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                           child: Text(
                                             'Delete',
                                             style: TextStyle(
-                                              color: Theme.of(context)
+                                              color:
+                                                  Theme.of(context)
                                                       .extension<AppColors>()
                                                       ?.expense ??
-                                                  Theme.of(context)
-                                                      .colorScheme
-                                                      .error,
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.error,
                                             ),
                                           ),
                                         ),
@@ -525,12 +532,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       Icon(
                                         Icons.delete_outline,
                                         size: 18,
-                                        color: Theme.of(context)
-                                                .extension<AppColors>()
-                                                ?.expense ??
-                                            Theme.of(context)
-                                                .colorScheme
-                                                .error,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).extension<AppColors>()?.expense ??
+                                            Theme.of(context).colorScheme.error,
                                       ),
                                       const SizedBox(width: 8),
                                       const Text('Delete'),
@@ -637,19 +643,20 @@ class _NotchedRectClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final rectPath = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Radius.circular(cornerRadius),
-      ));
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          Radius.circular(cornerRadius),
+        ),
+      );
 
     final centerY = size.height / 2;
     final centerX = side == _NotchSide.left ? 0.0 : size.width;
 
     final circlePath = Path()
-      ..addOval(Rect.fromCircle(
-        center: Offset(centerX, centerY),
-        radius: notchRadius,
-      ));
+      ..addOval(
+        Rect.fromCircle(center: Offset(centerX, centerY), radius: notchRadius),
+      );
 
     return Path.combine(PathOperation.difference, rectPath, circlePath);
   }
