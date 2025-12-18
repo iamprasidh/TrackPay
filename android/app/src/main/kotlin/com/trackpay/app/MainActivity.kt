@@ -1,4 +1,4 @@
-package com.example.trackpay
+package com.trackpay.app
 
 import io.flutter.embedding.android.FlutterActivity
 
