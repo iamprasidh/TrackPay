@@ -45,6 +45,20 @@ class TransactionNotifier extends StateNotifier<List<Transaction>> {
     }
   }
 
+  Future<void> updateTransaction(Transaction transaction) async {
+    try {
+      await TransactionService.updateTransaction(transaction);
+      await loadTransactions();
+    } catch (e) {
+      final ctx = _context;
+      if (ctx != null) {
+        AppSnackbar.show(ctx,
+            message: 'Could not update transaction', isError: true);
+      }
+      rethrow;
+    }
+  }
+
   Future<void> deleteTransaction(String id) async {
     try {
       await TransactionService.deleteTransaction(id);
