@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trackpay/utils/app_colors.dart';
 
 import '../../models/transaction_type.dart';
 import '../../providers/category_provider.dart';
@@ -127,7 +128,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             child: _SummaryTile(
               title: 'Income',
               value: formatCurrency(monthIncome),
-              color: Colors.green,
+              color: Theme.of(context).extension<AppColors>()?.income ??
+                  Theme.of(context).colorScheme.tertiary,
               icon: Icons.trending_up_rounded,
             ),
           ),
@@ -144,7 +146,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             child: _SummaryTile(
               title: 'Expense',
               value: formatCurrency(monthExpense),
-              color: Colors.redAccent,
+              color: Theme.of(context).extension<AppColors>()?.expense ??
+                  Theme.of(context).colorScheme.error,
               icon: Icons.trending_down_rounded,
             ),
           ),
@@ -157,24 +160,32 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     Widget buildCategoryBreakdown() {
       // Category breakdown is only relevant for expenses
       if (widget.filterType == TransactionType.income) {
-        return const Center(
+        return Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
+            padding: const EdgeInsets.symmetric(vertical: 24),
             child: Text(
               'Category breakdown is available for expenses only',
-              style: TextStyle(color: Colors.grey),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
         );
       }
 
       if (expenseByCategory.isEmpty) {
-        return const Center(
+        return Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
+            padding: const EdgeInsets.symmetric(vertical: 24),
             child: Text(
               'No expenses for this month yet',
-              style: TextStyle(color: Colors.grey),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
         );
@@ -240,7 +251,10 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
-                      ?.copyWith(color: Colors.grey),
+                      ?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant),
                 ),
               ],
             ),
@@ -286,17 +300,23 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           .fold<double>(0, (max, s) => s.totalExpense > max ? s.totalExpense : max);
 
       if (maxValue == 0) {
-        return const Center(
+        return Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
+            padding: const EdgeInsets.symmetric(vertical: 24),
             child: Text(
               'No trend yet. Start adding transactions!',
-              style: TextStyle(color: Colors.grey),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
         );
       }
 
+      final appColors = Theme.of(context).extension<AppColors>();
+      final cs = Theme.of(context).colorScheme;
       return Column(
         children: lastSixMonths.map((stat) {
           final barValue = (stat.totalExpense / maxValue).clamp(0.0, 1.0);
@@ -319,6 +339,13 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     child: LinearProgressIndicator(
                       value: barValue,
                       minHeight: 8,
+                      backgroundColor: cs.surfaceVariant.withOpacity(0.4),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        (widget.filterType == TransactionType.income
+                                ? appColors?.income
+                                : appColors?.expense) ??
+                            cs.primary,
+                      ),
                     ),
                   ),
                 ),
@@ -382,7 +409,10 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(color: Colors.grey),
+                              ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant),
                         ),
                       ],
                     ),

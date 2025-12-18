@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../utils/app_colors.dart';
 import '../../providers/category_provider.dart';
 import '../../models/category.dart';
 
@@ -21,11 +22,14 @@ class CategoriesScreen extends ConsumerWidget {
         ],
       ),
       body: categories.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'No categories yet.\nTap the + button to add some!',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             )
           : ListView.builder(
@@ -54,7 +58,11 @@ class CategoriesScreen extends ConsumerWidget {
             // Main category header
             Row(
               children: [
-                const Icon(Icons.category, size: 24, color: Colors.blue),
+                Icon(
+                  Icons.category,
+                  size: 24,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -71,7 +79,14 @@ class CategoriesScreen extends ConsumerWidget {
                       _showEditCategoryDialog(context, ref, category),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                  icon: Icon(
+                    Icons.delete,
+                    size: 20,
+                    color: Theme.of(context)
+                            .extension<AppColors>()
+                            ?.expense ??
+                        Theme.of(context).colorScheme.error,
+                  ),
                   onPressed: () => _deleteCategory(context, ref, category.id),
                 ),
               ],
@@ -84,13 +99,13 @@ class CategoriesScreen extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Subcategories:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   ...category.subCategories.map((subcategory) {
@@ -98,10 +113,12 @@ class CategoriesScreen extends ConsumerWidget {
                       padding: const EdgeInsets.only(left: 36, bottom: 4),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.arrow_right,
                             size: 16,
-                            color: Colors.green,
+                            color: Theme.of(context)
+                                .extension<AppColors>()
+                                ?.income ?? Theme.of(context).colorScheme.tertiary,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -111,10 +128,13 @@ class CategoriesScreen extends ConsumerWidget {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.remove_circle_outline,
                               size: 16,
-                              color: Colors.red,
+                              color: Theme.of(context)
+                                      .extension<AppColors>()
+                                      ?.expense ??
+                                  Theme.of(context).colorScheme.error,
                             ),
                             onPressed: () => _removeSubcategory(
                               context,
@@ -319,7 +339,15 @@ class CategoriesScreen extends ConsumerWidget {
                   .deleteCategory(categoryId);
               Navigator.pop(context);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(
+              'Delete',
+              style: TextStyle(
+                color: Theme.of(context)
+                        .extension<AppColors>()
+                        ?.expense ??
+                    Theme.of(context).colorScheme.error,
+              ),
+            ),
           ),
         ],
       ),

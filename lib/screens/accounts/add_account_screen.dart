@@ -131,10 +131,17 @@ void _loadUserName() async {
             const SizedBox(height: 8),
             Expanded(
               child: accounts.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         "No accounts yet",
-                        style: TextStyle(color: Colors.grey),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
                       ),
                     )
                   : ListView.builder(

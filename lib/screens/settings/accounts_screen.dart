@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../utils/app_colors.dart';
 
 import '../../models/account.dart';
 import '../../providers/account_provider.dart';
@@ -23,11 +24,14 @@ class AccountsScreen extends ConsumerWidget {
         ],
       ),
       body: accounts.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'No accounts yet.\nTap the + button to add your first account.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             )
           : ListView.builder(
@@ -37,7 +41,10 @@ class AccountsScreen extends ConsumerWidget {
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
-                    leading: const Icon(Icons.account_balance_wallet, color: Colors.blue),
+                    leading: Icon(
+                      Icons.account_balance_wallet,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     title: Text(account.accountName),
                     subtitle: Text(
                       'Balance: ₹${account.openingBalance.toStringAsFixed(2)}',
@@ -47,11 +54,22 @@ class AccountsScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit, size: 20, color: Colors.orange),
+                          icon: Icon(
+                            Icons.edit,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
                           onPressed: () => _showEditAccountDialog(context, ref, account),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                          icon: Icon(
+                            Icons.delete,
+                            size: 20,
+                            color: Theme.of(context)
+                                    .extension<AppColors>()
+                                    ?.expense ??
+                                Theme.of(context).colorScheme.error,
+                          ),
                           onPressed: () => _showDeleteConfirmationDialog(context, ref, account),
                         ),
                       ],
@@ -203,8 +221,11 @@ class AccountsScreen extends ConsumerWidget {
               ref.read(accountNotifierProvider.notifier).deleteAccount(account.id);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),

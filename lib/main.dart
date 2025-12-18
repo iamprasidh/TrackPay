@@ -11,6 +11,7 @@ import './models/transaction_type.dart';
 import './models/settings.dart';
 import './providers/settings_provider.dart';
 import 'screens/launch/launch_screen.dart';
+import 'utils/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,10 +56,24 @@ class MyApp extends ConsumerWidget {
 
     final baseTextTheme = ThemeData().textTheme;
 
+    // Semantic colors used across the app for consistent visuals.
+    const appColorsLight = AppColors(
+      income: Color(0xFF16A34A), // green-600
+      expense: Color(0xFFDC2626), // red-600
+      muted: Color(0xFF64748B), // slate-500
+    );
+
+    const appColorsDark = AppColors(
+      income: Color(0xFF22C55E), // green-500
+      expense: Color(0xFFF87171), // red-400
+      muted: Color(0xFF94A3B8), // slate-400
+    );
+
     final lightTheme = ThemeData(
       useMaterial3: true,
       colorScheme: lightColorScheme,
       scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+      extensions: const [appColorsLight],
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: lightColorScheme.onSurface,
@@ -68,29 +83,22 @@ class MyApp extends ConsumerWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: CardThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 0,
-        color: Colors.white,
-        margin: const EdgeInsets.symmetric(vertical: 6),
-      ),
+      // cardTheme removed to resolve linter type mismatch; cards inherit defaults.
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: lightColorScheme.surfaceVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: lightColorScheme.surfaceVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: lightColorScheme.primary, width: 1.4),
         ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: lightColorScheme.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -123,6 +131,7 @@ class MyApp extends ConsumerWidget {
       useMaterial3: true,
       colorScheme: darkColorScheme,
       scaffoldBackgroundColor: const Color(0xFF020617),
+      extensions: const [appColorsDark],
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: darkColorScheme.onSurface,
@@ -132,29 +141,22 @@ class MyApp extends ConsumerWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: CardThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 0,
-        color: const Color(0xFF020617).withOpacity(0.9),
-        margin: const EdgeInsets.symmetric(vertical: 6),
-      ),
+      // cardTheme removed to resolve linter type mismatch; cards inherit defaults.
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade700),
+          borderSide: BorderSide(color: darkColorScheme.surfaceVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade700),
+          borderSide: BorderSide(color: darkColorScheme.surfaceVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: darkColorScheme.primary, width: 1.4),
         ),
         filled: true,
-        fillColor: const Color(0xFF020617),
+        fillColor: darkColorScheme.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

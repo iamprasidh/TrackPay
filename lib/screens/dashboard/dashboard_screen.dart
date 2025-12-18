@@ -8,6 +8,7 @@ import '../../providers/settings_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/list_extensions.dart';
+import '../../utils/app_colors.dart';
 import '../transactions/add_transaction_screen.dart';
 import '../settings/settings_screen.dart';
 import 'analytics_screen.dart';
@@ -193,7 +194,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   title: "Income",
                                   value: formatCurrency(monthlyIncome),
                                   icon: Icons.trending_up_rounded,
-                                  color: Colors.green,
+                                  color: Theme.of(context)
+                                      .extension<AppColors>()
+                                      ?.income ?? Theme.of(context).colorScheme.tertiary,
                                 ),
                               ),
                             ),
@@ -225,7 +228,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     title: "Expense",
                                     value: formatCurrency(monthlyExpense),
                                     icon: Icons.trending_down_rounded,
-                                    color: Colors.redAccent,
+                                    color: Theme.of(context)
+                                        .extension<AppColors>()
+                                        ?.expense ?? Theme.of(context).colorScheme.error,
                                   ),
                                 ),
                               ),
@@ -252,15 +257,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             );
                           },
-                          child: const SizedBox(
-                            width: 44,
-                            height: 44,
-                            child: Icon(
-                              Icons.insights_outlined,
-                              color: Colors.white,
-                              size: 22,
+                            child: SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: Icon(
+                                Icons.insights_outlined,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                size: 22,
+                              ),
                             ),
-                          ),
                         ),
                       ),
                     ],
@@ -318,17 +323,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.receipt_long_outlined,
                             size: 48,
-                            color: Colors.grey,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(height: 8),
                           Text(
                             isCurrentMonth
                                 ? "No transactions yet"
                                 : "No transactions",
-                            style: const TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           if (isCurrentMonth) ...[
                             const SizedBox(height: 16),
@@ -367,22 +374,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         final categoryName = categories
                             .firstOrNull((c) => c.id == t.categoryId)
                             ?.categoryName;
+                        final subCategory = t.subCategoryName;
+                        final categoryPath = [
+                          if (categoryName != null) categoryName,
+                          if (subCategory != null && subCategory.isNotEmpty)
+                            subCategory,
+                        ].join(' > ');
+                        final formattedDate = '${t.date.day.toString().padLeft(2, '0')} '
+                            '${_monthNames[t.date.month - 1]} '
+                            '${t.date.year}';
 
                         return Card(
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor:
-                                  (isIncome
-                                          ? Colors.greenAccent
-                                          : Colors.redAccent)
-                                      .withOpacity(0.2),
+                              backgroundColor: isIncome
+                                  ? (Theme.of(context)
+                                          .extension<AppColors>()
+                                          ?.income ??
+                                      Theme.of(context).colorScheme.tertiary)
+                                      .withOpacity(0.15)
+                                  : (Theme.of(context)
+                                          .extension<AppColors>()
+                                          ?.expense ??
+                                      Theme.of(context).colorScheme.error)
+                                      .withOpacity(0.15),
                               child: Icon(
                                 isIncome
                                     ? Icons.trending_up_rounded
                                     : Icons.trending_down_rounded,
                                 color: isIncome
-                                    ? Colors.green
-                                    : Colors.redAccent,
+                                    ? (Theme.of(context)
+                                            .extension<AppColors>()
+                                            ?.income ?? Theme.of(context).colorScheme.tertiary)
+                                    : (Theme.of(context)
+                                            .extension<AppColors>()
+                                            ?.expense ?? Theme.of(context).colorScheme.error),
                               ),
                             ),
                             title: Text(
@@ -390,24 +416,40 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: isIncome
-                                    ? Colors.green
-                                    : Colors.redAccent,
+                                    ? (Theme.of(context)
+                                            .extension<AppColors>()
+                                            ?.income ?? Theme.of(context).colorScheme.tertiary)
+                                    : (Theme.of(context)
+                                            .extension<AppColors>()
+                                            ?.expense ?? Theme.of(context).colorScheme.error),
                               ),
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (categoryPath.isNotEmpty)
+                                  Text(
+                                    categoryPath,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
                                 if (t.note != null && t.note!.isNotEmpty)
                                   Text(t.note!),
-                                if (accountName != null || categoryName != null)
-                                  Text(
-                                    [
-                                      if (accountName != null) accountName,
-                                      if (categoryName != null) categoryName,
-                                    ].join(' • '),
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: Colors.grey),
-                                  ),
+                                Text(
+                                  [
+                                    if (accountName != null) accountName,
+                                    formattedDate,
+                                  ].join(' • '),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                              ),
                               ],
                             ),
                             trailing: PopupMenuButton<String>(
@@ -438,10 +480,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(context, true),
-                                          child: const Text(
+                                          child: Text(
                                             'Delete',
                                             style: TextStyle(
-                                              color: Colors.redAccent,
+                                              color: Theme.of(context)
+                                                      .extension<AppColors>()
+                                                      ?.expense ??
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .error,
                                             ),
                                           ),
                                         ),
@@ -460,14 +507,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   }
                                 }
                               },
-                              itemBuilder: (context) => const [
+                              itemBuilder: (context) => [
                                 PopupMenuItem(
                                   value: 'edit',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.edit, size: 18),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
+                                      const Icon(Icons.edit, size: 18),
+                                      const SizedBox(width: 8),
+                                      const Text('Edit'),
                                     ],
                                   ),
                                 ),
@@ -478,10 +525,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       Icon(
                                         Icons.delete_outline,
                                         size: 18,
-                                        color: Colors.redAccent,
+                                        color: Theme.of(context)
+                                                .extension<AppColors>()
+                                                ?.expense ??
+                                            Theme.of(context)
+                                                .colorScheme
+                                                .error,
                                       ),
-                                      SizedBox(width: 8),
-                                      Text('Delete'),
+                                      const SizedBox(width: 8),
+                                      const Text('Delete'),
                                     ],
                                   ),
                                 ),

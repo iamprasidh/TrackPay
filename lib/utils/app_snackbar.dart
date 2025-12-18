@@ -15,10 +15,21 @@ class AppSnackbar {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Builder(
+          builder: (ctx) {
+            final cs = Theme.of(ctx).colorScheme;
+            return Text(
+              message,
+              style: TextStyle(
+                color: isError ? cs.onError : cs.onPrimary,
+              ),
+            );
+          },
+        ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor:
-            isError ? Colors.redAccent : Theme.of(context).colorScheme.primary,
+        backgroundColor: isError
+            ? Theme.of(context).colorScheme.error
+            : Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
