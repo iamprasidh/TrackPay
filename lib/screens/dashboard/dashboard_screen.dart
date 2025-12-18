@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trackpay/models/transaction_type.dart';
 
-import '../../providers/dashboard/dashboard_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -13,12 +12,67 @@ import '../transactions/add_transaction_screen.dart';
 import '../settings/settings_screen.dart';
 import 'analytics_screen.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final transactions = ref.watch(recentTransactionsProvider);
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  DateTime selectedMonth =
+      DateTime(DateTime.now().year, DateTime.now().month);
+
+  static const List<String> _monthNames = <String>[
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  void _prevMonth() {
+    setState(() {
+      selectedMonth = DateTime(selectedMonth.year, selectedMonth.month - 1);
+    });
+  }
+
+  void _nextMonth() {
+    final now = DateTime.now();
+    final isBeforeOrEqualCurrent = selectedMonth.year < now.year ||
+        (selectedMonth.year == now.year && selectedMonth.month < now.month);
+    if (!isBeforeOrEqualCurrent) return;
+    setState(() {
+      selectedMonth = DateTime(selectedMonth.year, selectedMonth.month + 1);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
+    final allTransactions = ref.watch(transactionProvider);
+    final monthlyTransactions = allTransactions
+        .where((t) =>
+            t.date.year == selectedMonth.year &&
+            t.date.month == selectedMonth.month)
+        .toList();
+    final monthlyIncome = monthlyTransactions
+        .where((t) => t.transactionType == TransactionType.income)
+        .fold<double>(0.0, (sum, t) => sum + t.amount);
+    final monthlyExpense = monthlyTransactions
+        .where((t) => t.transactionType == TransactionType.expense)
+        .fold<double>(0.0, (sum, t) => sum + t.amount);
+    final monthlyNet = monthlyIncome - monthlyExpense;
+    final now = DateTime.now();
+    final isCurrentMonth =
+        selectedMonth.year == now.year && selectedMonth.month == now.month;
     final accounts = ref.watch(accountNotifierProvider);
     final categories = ref.watch(categoryNotifierProvider);
     final settings = ref.watch(settingsProvider);
@@ -39,8 +93,21 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TrackPay'),
-        centerTitle: true,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              color: colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'TrackPay',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.insights_outlined),
@@ -67,50 +134,114 @@ class DashboardScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Month selector and monthly summary
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
                 children: [
+                  IconButton(
+                    tooltip: 'Previous month',
+                    onPressed: _prevMonth,
+                    icon: const Icon(Icons.chevron_left),
+                  ),
                   Expanded(
-                    child: _StatTile(
-                      title: "Balance",
-                      value: formatCurrency(ref.watch(balanceProvider)),
-                      icon: Icons.account_balance_wallet_outlined,
-                      color: colorScheme.primary,
+                    child: Center(
+                      child: Text(
+                        '${_monthNames[selectedMonth.month - 1]} ${selectedMonth.year}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatTile(
-                      title: "Income",
-                      value: formatCurrency(ref.watch(totalIncomeProvider)),
-                      icon: Icons.trending_up_rounded,
-                      color: Colors.green,
+                  IconButton(
+                    tooltip: 'Next month',
+                    onPressed: () {
+                      final now = DateTime.now();
+                      final isCurrentMonth = selectedMonth.year == now.year &&
+                          selectedMonth.month == now.month;
+                      if (!isCurrentMonth) _nextMonth();
+                    },
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+              child: Builder(
+                builder: (context) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _StatTile(
+                          title: "Income",
+                          value: formatCurrency(monthlyIncome),
+                          icon: Icons.trending_up_rounded,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatTile(
+                          title: "Expense",
+                          value: formatCurrency(monthlyExpense),
+                          icon: Icons.trending_down_rounded,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            // Add Transaction button above closing balance section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: Align(
+                alignment: Alignment.center,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Transaction'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AddTransactionScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Closing Balance",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatTile(
-                      title: "Expense",
-                      value: formatCurrency(ref.watch(totalExpenseProvider)),
-                      icon: Icons.trending_down_rounded,
-                      color: Colors.redAccent,
+                  Text(
+                    formatCurrency(monthlyNet),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Text(
-                "Recent Transactions",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ),
-
             Expanded(
-              child: transactions.isEmpty
+              child: monthlyTransactions.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -121,32 +252,37 @@ class DashboardScreen extends ConsumerWidget {
                             color: Colors.grey,
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            "No transactions yet",
-                            style: TextStyle(color: Colors.grey),
+                          Text(
+                            isCurrentMonth
+                                ? "No transactions yet"
+                                : "No transactions",
+                            style: const TextStyle(color: Colors.grey),
                           ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AddTransactionScreen(),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add your first transaction'),
-                          ),
+                          if (isCurrentMonth) ...[
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const AddTransactionScreen(),
+                                  ),
+                                );
+                              },
+                              child:
+                                  const Text('Add your first transaction'),
+                            ),
+                          ],
                         ],
                       ),
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      itemCount: transactions.length,
+                      itemCount: monthlyTransactions.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
-                        final t = transactions[index];
+                        final t = monthlyTransactions[index];
                         final isIncome =
                             t.transactionType == TransactionType.income;
                         final displayAmount =
@@ -287,15 +423,7 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+      // Floating action button removed; Add Transaction button is placed above closing balance
     );
   }
 }
