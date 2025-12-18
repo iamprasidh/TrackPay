@@ -110,16 +110,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.insights_outlined),
-            tooltip: 'Analytics',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
-              );
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
               Navigator.push(
@@ -172,23 +162,105 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Builder(
                 builder: (context) {
-                  return Row(
+                  return Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
                     children: [
-                      Expanded(
-                        child: _StatTile(
-                          title: "Income",
-                          value: formatCurrency(monthlyIncome),
-                          icon: Icons.trending_up_rounded,
-                          color: Colors.green,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AnalyticsScreen(
+                                      initialMonth: selectedMonth,
+                                      filterType: TransactionType.income,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ClipPath(
+                                clipper: _NotchedRectClipper(
+                                  side: _NotchSide.right,
+                                  notchRadius: 26,
+                                  cornerRadius: 16,
+                                ),
+                                child: _StatTile(
+                                  title: "Income",
+                                  value: formatCurrency(monthlyIncome),
+                                  icon: Icons.trending_up_rounded,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 0),
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AnalyticsScreen(
+                                      initialMonth: selectedMonth,
+                                      filterType: TransactionType.expense,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ClipPath(
+                                clipper: _NotchedRectClipper(
+                                  side: _NotchSide.left,
+                                  notchRadius: 26,
+                                  cornerRadius: 16,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 12),
+                                  child: _StatTile(
+                                    title: "Expense",
+                                    value: formatCurrency(monthlyExpense),
+                                    icon: Icons.trending_down_rounded,
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatTile(
-                          title: "Expense",
-                          value: formatCurrency(monthlyExpense),
-                          icon: Icons.trending_down_rounded,
-                          color: Colors.redAccent,
+
+                      // Center circular analytics button overlapping tiles
+                      Material(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: const CircleBorder(),
+                        elevation: 3,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AnalyticsScreen(
+                                  initialMonth: selectedMonth,
+                                  filterType: null,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Icon(
+                              Icons.insights_outlined,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -494,5 +566,46 @@ class _StatTile extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+enum _NotchSide { left, right }
+
+class _NotchedRectClipper extends CustomClipper<Path> {
+  final _NotchSide side;
+  final double notchRadius;
+  final double cornerRadius;
+
+  _NotchedRectClipper({
+    required this.side,
+    required this.notchRadius,
+    this.cornerRadius = 16,
+  });
+
+  @override
+  Path getClip(Size size) {
+    final rectPath = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Radius.circular(cornerRadius),
+      ));
+
+    final centerY = size.height / 2;
+    final centerX = side == _NotchSide.left ? 0.0 : size.width;
+
+    final circlePath = Path()
+      ..addOval(Rect.fromCircle(
+        center: Offset(centerX, centerY),
+        radius: notchRadius,
+      ));
+
+    return Path.combine(PathOperation.difference, rectPath, circlePath);
+  }
+
+  @override
+  bool shouldReclip(covariant _NotchedRectClipper oldClipper) {
+    return oldClipper.side != side ||
+        oldClipper.notchRadius != notchRadius ||
+        oldClipper.cornerRadius != cornerRadius;
   }
 }
