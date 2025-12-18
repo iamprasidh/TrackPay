@@ -110,22 +110,45 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _changeCurrency(BuildContext context, WidgetRef ref, String current) {
-    final controller = TextEditingController(text: current);
+    const currencies = ['INR', 'USD', 'EUR', 'GBP'];
+    String selected = (current.isNotEmpty ? current.toUpperCase() : 'INR');
+    if (!currencies.contains(selected)) selected = 'INR';
+
+    String symbolFor(String code) {
+      switch (code.toUpperCase()) {
+        case 'INR':
+          return '₹';
+        case 'USD':
+          return '\$';
+        case 'EUR':
+          return '€';
+        case 'GBP':
+          return '£';
+        default:
+          return code;
+      }
+    }
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Change Currency"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: "Currency"),
+        content: DropdownButtonFormField<String>(
+          value: selected,
+          items: currencies
+              .map((c) => DropdownMenuItem(
+                    value: c,
+                    child: Text('$c  ${symbolFor(c)}'),
+                  ))
+              .toList(),
+          onChanged: (val) {
+            if (val != null) selected = val;
+          },
         ),
         actions: [
           TextButton(
             onPressed: () {
-              final currency = controller.text.trim();
-              if (currency.isEmpty) return;
-              ref.read(settingsProvider.notifier).updateCurrency(currency);
+              ref.read(settingsProvider.notifier).updateCurrency(selected);
               Navigator.pop(context);
             },
             child: const Text("Save"),

@@ -353,7 +353,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Amount"),
+              decoration: InputDecoration(
+                labelText: "Amount",
+                prefixText: (() {
+                  final code = settings.currency.isNotEmpty
+                      ? settings.currency
+                      : 'INR';
+                  switch (code.toUpperCase()) {
+                    case 'INR':
+                      return '₹ ';
+                    case 'USD':
+                      return '\$ ';
+                    case 'EUR':
+                      return '€ ';
+                    case 'GBP':
+                      return '£ ';
+                    default:
+                      return '$code ';
+                  }
+                })(),
+              ),
             ),
 
             const SizedBox(height: 16),
@@ -369,8 +388,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             /// Save
             ElevatedButton(
               onPressed: _saveTransaction,
-              child:
-                  Text(isEditing ? "Update Transaction" : "Save Transaction"),
+              child: Text(
+                isEditing ? "Update Transaction" : "Save Transaction",
+              ),
             ),
           ],
         ),
