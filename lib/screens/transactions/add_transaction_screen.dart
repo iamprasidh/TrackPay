@@ -11,9 +11,11 @@ import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/list_extensions.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
-  const AddTransactionScreen({super.key});
+  final Transaction? initialTransaction;
+  const AddTransactionScreen({super.key, this.initialTransaction});
 
   @override
   ConsumerState<AddTransactionScreen> createState() =>
@@ -31,6 +33,23 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   Account? selectedAccount;
   String? selectedCategoryId;
   String? selectedSubCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    final t = widget.initialTransaction;
+    if (t != null) {
+      selectedDate = t.date;
+      type = t.transactionType;
+      amountController.text = t.amount.toString();
+      noteController.text = t.note ?? '';
+      selectedCategoryId = t.categoryId;
+      selectedSubCategory = t.subCategoryName;
+
+      final accounts = ref.read(accountNotifierProvider);
+      selectedAccount = accounts.firstOrNull((a) => a.id == t.accountId);
+    }
+  }
 
   @override
   void dispose() {
@@ -164,8 +183,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       return;
     }
 
+    final isEditing = widget.initialTransaction != null;
     final transaction = Transaction(
-      id: uuid.v4(),
+      id: isEditing ? widget.initialTransaction!.id : uuid.v4(),
       date: selectedDate,
       transactionType: type,
       amount: parsedAmount,
@@ -176,14 +196,24 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     );
 
     try {
-      await ref.read(transactionProvider.notifier).addTransaction(transaction);
+      if (isEditing) {
+        await ref
+            .read(transactionProvider.notifier)
+            .updateTransaction(transaction);
+      } else {
+        await ref
+            .read(transactionProvider.notifier)
+            .addTransaction(transaction);
+      }
       if (!mounted) return;
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       AppSnackbar.show(
         context,
-        message: "Failed to save transaction. Please try again.",
+        message: isEditing
+            ? "Failed to update transaction. Please try again."
+            : "Failed to save transaction. Please try again.",
         isError: true,
       );
     }
@@ -199,8 +229,11 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         ? null
         : categories.firstWhere((c) => c.id == selectedCategoryId);
 
+    final isEditing = widget.initialTransaction != null;
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Transaction")),
+      appBar: AppBar(
+        title: Text(isEditing ? "Edit Transaction" : "Add Transaction"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
@@ -336,7 +369,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             /// Save
             ElevatedButton(
               onPressed: _saveTransaction,
-              child: const Text("Save Transaction"),
+              child:
+                  Text(isEditing ? "Update Transaction" : "Save Transaction"),
             ),
           ],
         ),

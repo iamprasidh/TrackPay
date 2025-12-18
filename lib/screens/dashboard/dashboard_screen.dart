@@ -6,6 +6,7 @@ import '../../providers/dashboard/dashboard_provider.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/transaction_provider.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/list_extensions.dart';
 import '../transactions/add_transaction_screen.dart';
@@ -82,8 +83,7 @@ class DashboardScreen extends ConsumerWidget {
                   Expanded(
                     child: _StatTile(
                       title: "Income",
-                      value:
-                          formatCurrency(ref.watch(totalIncomeProvider)),
+                      value: formatCurrency(ref.watch(totalIncomeProvider)),
                       icon: Icons.trending_up_rounded,
                       color: Colors.green,
                     ),
@@ -92,8 +92,7 @@ class DashboardScreen extends ConsumerWidget {
                   Expanded(
                     child: _StatTile(
                       title: "Expense",
-                      value:
-                          formatCurrency(ref.watch(totalExpenseProvider)),
+                      value: formatCurrency(ref.watch(totalExpenseProvider)),
                       icon: Icons.trending_down_rounded,
                       color: Colors.redAccent,
                     ),
@@ -116,18 +115,24 @@ class DashboardScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.receipt_long_outlined,
-                              size: 48, color: Colors.grey),
+                          const Icon(
+                            Icons.receipt_long_outlined,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
                           const SizedBox(height: 8),
-                          const Text("No transactions yet",
-                              style: TextStyle(color: Colors.grey)),
+                          const Text(
+                            "No transactions yet",
+                            style: TextStyle(color: Colors.grey),
+                          ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => const AddTransactionScreen()),
+                                  builder: (_) => const AddTransactionScreen(),
+                                ),
                               );
                             },
                             icon: const Icon(Icons.add),
@@ -142,7 +147,10 @@ class DashboardScreen extends ConsumerWidget {
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final t = transactions[index];
-                        final isIncome = t.transactionType == TransactionType.income;
+                        final isIncome =
+                            t.transactionType == TransactionType.income;
+                        final displayAmount =
+                            (isIncome ? '+ ' : '- ') + formatCurrency(t.amount);
 
                         final accountName = accounts
                             .firstOrNull((a) => a.id == t.accountId)
@@ -155,20 +163,27 @@ class DashboardScreen extends ConsumerWidget {
                         return Card(
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: (isIncome
-                                      ? Colors.greenAccent
-                                      : Colors.redAccent)
-                                  .withOpacity(0.2),
+                              backgroundColor:
+                                  (isIncome
+                                          ? Colors.greenAccent
+                                          : Colors.redAccent)
+                                      .withOpacity(0.2),
                               child: Icon(
-                                isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                                color: isIncome ? Colors.green : Colors.redAccent,
+                                isIncome
+                                    ? Icons.trending_up_rounded
+                                    : Icons.trending_down_rounded,
+                                color: isIncome
+                                    ? Colors.green
+                                    : Colors.redAccent,
                               ),
                             ),
                             title: Text(
-                              formatCurrency(t.amount),
+                              displayAmount,
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: isIncome ? Colors.green : Colors.redAccent,
+                                color: isIncome
+                                    ? Colors.green
+                                    : Colors.redAccent,
                               ),
                             ),
                             subtitle: Column(
@@ -182,23 +197,87 @@ class DashboardScreen extends ConsumerWidget {
                                       if (accountName != null) accountName,
                                       if (categoryName != null) categoryName,
                                     ].join(' • '),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(color: Colors.grey),
                                   ),
                               ],
                             ),
-                            trailing: Chip(
-                              label: Text(isIncome ? 'Income' : 'Expense'),
-                              backgroundColor: (isIncome
-                                      ? Colors.greenAccent
-                                      : Colors.redAccent)
-                                  .withOpacity(0.15),
-                              labelStyle: TextStyle(
-                                color: isIncome ? Colors.green.shade700 : Colors.redAccent,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == 'edit') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => AddTransactionScreen(
+                                        initialTransaction: t,
+                                      ),
+                                    ),
+                                  );
+                                } else if (value == 'delete') {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: const Text('Delete transaction?'),
+                                      content: const Text(
+                                        'This action cannot be undone.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text(
+                                            'Delete',
+                                            style: TextStyle(
+                                              color: Colors.redAccent,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    await ref
+                                        .read(transactionProvider.notifier)
+                                        .deleteTransaction(t.id);
+                                    AppSnackbar.show(
+                                      context,
+                                      message: 'Transaction deleted',
+                                    );
+                                  }
+                                }
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit, size: 18),
+                                      SizedBox(width: 8),
+                                      Text('Edit'),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: 18,
+                                        color: Colors.redAccent,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text('Delete'),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -227,7 +306,12 @@ class _StatTile extends StatelessWidget {
   final IconData? icon;
   final Color? color;
 
-  const _StatTile({required this.title, required this.value, this.icon, this.color});
+  const _StatTile({
+    required this.title,
+    required this.value,
+    this.icon,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
