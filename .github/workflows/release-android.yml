@@ -1,0 +1,54 @@
+name: Release Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Fetch dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep -E '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Rename APK
+        shell: bash
+        run: |
+          mkdir -p build/releases
+          cp build/app/outputs/flutter-apk/app-release.apk "build/releases/TrackPay-v${{ steps.version.outputs.version }}-release.apk"
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/releases/TrackPay-v${{ steps.version.outputs.version }}-release.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
