@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:file_saver/file_saver.dart';
+import 'dart:typed_data';
 import 'package:trackpay/services/account_service.dart';
 import 'package:trackpay/services/category_service.dart';
 import 'package:trackpay/services/budget_service.dart';
@@ -11,8 +13,12 @@ import 'package:trackpay/models/transaction_type.dart';
 class ExportService {
   static Future<Directory> _targetDownloadsDir() async {
     if (Platform.isAndroid) {
-      final dirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
-      final dir = dirs != null && dirs.isNotEmpty ? dirs.first : await getApplicationDocumentsDirectory();
+      final dirs = await getExternalStorageDirectories(
+        type: StorageDirectory.downloads,
+      );
+      final dir = dirs != null && dirs.isNotEmpty
+          ? dirs.first
+          : await getApplicationDocumentsDirectory();
       if (!await dir.exists()) await dir.create(recursive: true);
       return dir;
     }
@@ -53,7 +59,13 @@ class ExportService {
     }
 
     final shBudgets = excel['Budgets'];
-    shBudgets.appendRow(['id', 'category_id', 'limit', 'start_date', 'end_date']);
+    shBudgets.appendRow([
+      'id',
+      'category_id',
+      'limit',
+      'start_date',
+      'end_date',
+    ]);
     for (final b in budgets) {
       shBudgets.appendRow([
         b.id,
@@ -65,7 +77,16 @@ class ExportService {
     }
 
     final shTransactions = excel['Transactions'];
-    shTransactions.appendRow(['id', 'date', 'account_id', 'category_id', 'type', 'amount', 'sub_category_name', 'note']);
+    shTransactions.appendRow([
+      'id',
+      'date',
+      'account_id',
+      'category_id',
+      'type',
+      'amount',
+      'sub_category_name',
+      'note',
+    ]);
     for (final t in transactions) {
       shTransactions.appendRow([
         t.id,
@@ -79,18 +100,39 @@ class ExportService {
       ]);
     }
 
-    final bytes = excel.save();
-    final dir = await _targetDownloadsDir();
-    final file = File('${dir.path}${Platform.pathSeparator}TrackPay_${_timestamp()}.xlsx');
-    await file.writeAsBytes(bytes!, flush: true);
-    return file.path;
+    final bytes = excel.save()!;
+    if (Platform.isAndroid) {
+      final name = 'TrackPay_${_timestamp()}';
+      final savedPath = await FileSaver.instance.saveFile(
+        name: name,
+        ext: 'xlsx',
+        bytes: Uint8List.fromList(bytes),
+        mimeType: MimeType.microsoftExcel,
+      );
+      return savedPath;
+    } else {
+      final dir = await _targetDownloadsDir();
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}TrackPay_${_timestamp()}.xlsx',
+      );
+      await file.writeAsBytes(bytes, flush: true);
+      return file.path;
+    }
   }
 
   static Future<String> exportPdfToStorage() async {
     final pdf = pw.Document();
     final transactions = await TransactionService.getTransactions();
 
-    final headers = ['Date', 'Type', 'Amount', 'Account', 'Category', 'Sub', 'Note'];
+    final headers = [
+      'Date',
+      'Type',
+      'Amount',
+      'Account',
+      'Category',
+      'Sub',
+      'Note',
+    ];
     final data = transactions.map((t) {
       return [
         t.date.toIso8601String(),
@@ -113,9 +155,22 @@ class ExportService {
     );
 
     final bytes = await pdf.save();
-    final dir = await _targetDownloadsDir();
-    final file = File('${dir.path}${Platform.pathSeparator}TrackPay_${_timestamp()}.pdf');
-    await file.writeAsBytes(bytes, flush: true);
-    return file.path;
+    if (Platform.isAndroid) {
+      final name = 'TrackPay_${_timestamp()}';
+      final savedPath = await FileSaver.instance.saveFile(
+        name: name,
+        ext: 'pdf',
+        bytes: Uint8List.fromList(bytes),
+        mimeType: MimeType.pdf,
+      );
+      return savedPath;
+    } else {
+      final dir = await _targetDownloadsDir();
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}TrackPay_${_timestamp()}.pdf',
+      );
+      await file.writeAsBytes(bytes, flush: true);
+      return file.path;
+    }
   }
 }
