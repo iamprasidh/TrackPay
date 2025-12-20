@@ -219,7 +219,7 @@ class SettingsScreen extends ConsumerWidget {
                 itemBuilder: (ctx, i) {
                   final b = backups[i];
                   return ListTile(
-                    title: Text(b.path.split('/').last),
+                    title: Text(b.path.split(Platform.pathSeparator).last),
                     onTap: () {
                       selected = b;
                       Navigator.pop(ctx);
