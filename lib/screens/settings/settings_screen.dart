@@ -5,6 +5,7 @@ import 'categories_screen.dart';
 import 'accounts_screen.dart';
 import '../../providers/settings_provider.dart';
 import 'package:trackpay/services/backup_service.dart';
+import 'package:trackpay/services/export_service.dart';
 import 'package:trackpay/utils/app_snackbar.dart';
 import 'package:trackpay/providers/account_provider.dart';
 import 'package:trackpay/providers/category_provider.dart';
@@ -103,6 +104,18 @@ class SettingsScreen extends ConsumerWidget {
                   leading: const Icon(Icons.cloud_upload_outlined),
                   title: const Text("Import CSV (Restore)"),
                   onTap: () => _importCsv(context, ref),
+                ),
+                const Divider(height: 0),
+                ListTile(
+                  leading: const Icon(Icons.file_present_outlined),
+                  title: const Text("Export Excel to Downloads"),
+                  onTap: () => _exportExcel(context),
+                ),
+                const Divider(height: 0),
+                ListTile(
+                  leading: const Icon(Icons.picture_as_pdf_outlined),
+                  title: const Text("Export PDF to Downloads"),
+                  onTap: () => _exportPdf(context),
                 ),
               ],
             ),
@@ -249,6 +262,24 @@ class SettingsScreen extends ConsumerWidget {
       AppSnackbar.show(context, message: 'Data restored');
     } catch (e) {
       AppSnackbar.show(context, message: 'Import failed', isError: true);
+    }
+  }
+
+  Future<void> _exportExcel(BuildContext context) async {
+    try {
+      final path = await ExportService.exportExcelToStorage();
+      AppSnackbar.show(context, message: 'Excel saved to $path');
+    } catch (e) {
+      AppSnackbar.show(context, message: 'Excel export failed', isError: true);
+    }
+  }
+
+  Future<void> _exportPdf(BuildContext context) async {
+    try {
+      final path = await ExportService.exportPdfToStorage();
+      AppSnackbar.show(context, message: 'PDF saved to $path');
+    } catch (e) {
+      AppSnackbar.show(context, message: 'PDF export failed', isError: true);
     }
   }
 }
