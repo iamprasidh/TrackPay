@@ -10,7 +10,6 @@ import 'package:trackpay/services/budget_service.dart';
 import 'package:trackpay/services/category_service.dart';
 import 'package:trackpay/services/transaction_service.dart';
 import 'package:trackpay/utils/csv_utils.dart';
-import 'package:trackpay/utils/list_extensions.dart';
 
 class BackupService {
   static Future<Directory> _baseDir() async {
