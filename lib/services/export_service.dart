@@ -9,6 +9,8 @@ import 'package:trackpay/services/category_service.dart';
 import 'package:trackpay/services/budget_service.dart';
 import 'package:trackpay/services/transaction_service.dart';
 import 'package:trackpay/models/transaction_type.dart';
+import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ExportService {
   static Future<Directory> _targetDownloadsDir() async {
@@ -37,6 +39,35 @@ class ExportService {
     final now = DateTime.now();
     String two(int v) => v.toString().padLeft(2, '0');
     return '${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}${two(now.second)}';
+  }
+
+  static Future<String> _saveToCommonDownloadsAndroid({
+    required String baseName,
+    required String ext,
+    required Uint8List bytes,
+    required MimeType mimeType,
+  }) async {
+    try {
+      final savedPath = await FileSaver.instance.saveFile(
+        name: baseName,
+        ext: ext,
+        bytes: bytes,
+        mimeType: mimeType,
+      );
+      if (savedPath != null && !savedPath.contains('/Android/')) {
+        return savedPath;
+      }
+    } catch (_) {}
+    final status = await Permission.storage.request();
+    if (!status.isGranted) {
+      throw Exception('Storage permission denied');
+    }
+    final downloadsDir = await DownloadsPathProvider.downloadsDirectory;
+    final dir = downloadsDir ?? await _targetDownloadsDir();
+    final path = '${dir.path}${Platform.pathSeparator}$baseName.$ext';
+    final f = File(path);
+    await f.writeAsBytes(bytes, flush: true);
+    return path;
   }
 
   static Future<String> exportExcelToStorage() async {
@@ -102,14 +133,13 @@ class ExportService {
 
     final bytes = excel.save()!;
     if (Platform.isAndroid) {
-      final name = 'TrackPay_${_timestamp()}';
-      final savedPath = await FileSaver.instance.saveFile(
-        name: name,
+      final baseName = 'TrackPay_${_timestamp()}';
+      return _saveToCommonDownloadsAndroid(
+        baseName: baseName,
         ext: 'xlsx',
         bytes: Uint8List.fromList(bytes),
         mimeType: MimeType.microsoftExcel,
       );
-      return savedPath;
     } else {
       final dir = await _targetDownloadsDir();
       final file = File(
@@ -156,14 +186,13 @@ class ExportService {
 
     final bytes = await pdf.save();
     if (Platform.isAndroid) {
-      final name = 'TrackPay_${_timestamp()}';
-      final savedPath = await FileSaver.instance.saveFile(
-        name: name,
+      final baseName = 'TrackPay_${_timestamp()}';
+      return _saveToCommonDownloadsAndroid(
+        baseName: baseName,
         ext: 'pdf',
         bytes: Uint8List.fromList(bytes),
         mimeType: MimeType.pdf,
       );
-      return savedPath;
     } else {
       final dir = await _targetDownloadsDir();
       final file = File(

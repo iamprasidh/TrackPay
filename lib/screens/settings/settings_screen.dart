@@ -7,6 +7,7 @@ import '../../providers/settings_provider.dart';
 import 'package:trackpay/services/backup_service.dart';
 import 'package:trackpay/services/export_service.dart';
 import 'package:trackpay/utils/app_snackbar.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:trackpay/providers/account_provider.dart';
 import 'package:trackpay/providers/category_provider.dart';
 import 'package:trackpay/providers/budget_provider.dart';
@@ -268,7 +269,26 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _exportExcel(BuildContext context) async {
     try {
       final path = await ExportService.exportExcelToStorage();
-      AppSnackbar.show(context, message: 'Excel saved to $path');
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Excel Exported'),
+          content: Text(path),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                OpenFilex.open(path);
+              },
+              child: const Text('Open'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
     } catch (e) {
       AppSnackbar.show(context, message: 'Excel export failed', isError: true);
     }
@@ -277,7 +297,26 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _exportPdf(BuildContext context) async {
     try {
       final path = await ExportService.exportPdfToStorage();
-      AppSnackbar.show(context, message: 'PDF saved to $path');
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('PDF Exported'),
+          content: Text(path),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                OpenFilex.open(path);
+              },
+              child: const Text('Open'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
     } catch (e) {
       AppSnackbar.show(context, message: 'PDF export failed', isError: true);
     }
