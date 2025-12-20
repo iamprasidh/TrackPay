@@ -66,7 +66,9 @@ class SettingsScreen extends ConsumerWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const CategoriesScreen(),
+                      ),
                     );
                   },
                 ),
@@ -161,12 +163,14 @@ class SettingsScreen extends ConsumerWidget {
       builder: (_) => AlertDialog(
         title: const Text("Change Currency"),
         content: DropdownButtonFormField<String>(
-          value: selected,
+          initialValue: selected,
           items: currencies
-              .map((c) => DropdownMenuItem(
-                    value: c,
-                    child: Text('$c  ${symbolFor(c)}'),
-                  ))
+              .map(
+                (c) => DropdownMenuItem(
+                  value: c,
+                  child: Text('$c  ${symbolFor(c)}'),
+                ),
+              )
               .toList(),
           onChanged: (val) {
             if (val != null) selected = val;
@@ -228,13 +232,16 @@ class SettingsScreen extends ConsumerWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Cancel'),
-              )
+              ),
             ],
           );
         },
       );
       if (selected == null) return;
-      await BackupService.importAllFromCsv(sourceDir: selected, clearExisting: true);
+      await BackupService.importAllFromCsv(
+        sourceDir: selected,
+        clearExisting: true,
+      );
       ref.read(accountNotifierProvider.notifier).loadAccounts();
       ref.read(categoryNotifierProvider.notifier).loadCategories();
       ref.read(budgetNotifierProvider.notifier).loadBudgets();
