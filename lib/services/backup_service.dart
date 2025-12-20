@@ -125,10 +125,10 @@ class BackupService {
     Directory? sourceDir,
     bool clearExisting = true,
   }) async {
+    final backups = await listBackups();
     final dir =
         sourceDir ??
-        (await listBackups()).firstOrNull ??
-        await _createBackupDir();
+        (backups.isNotEmpty ? backups.first : await _createBackupDir());
 
     final accountsFile = File('${dir.path}/accounts.csv');
     final categoriesFile = File('${dir.path}/categories.csv');
