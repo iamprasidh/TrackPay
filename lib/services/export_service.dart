@@ -11,6 +11,7 @@ import 'package:trackpay/services/transaction_service.dart';
 import 'package:trackpay/models/transaction_type.dart';
 import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 
 class ExportService {
   static Future<Directory> _targetDownloadsDir() async {
@@ -54,17 +55,46 @@ class ExportService {
         bytes: bytes,
         mimeType: mimeType,
       );
-      if (savedPath != null && !savedPath.contains('/Android/')) {
+      if (savedPath != null &&
+          savedPath.isNotEmpty &&
+          !savedPath.contains('/Android/')) {
         return savedPath;
       }
     } catch (_) {}
     final status = await Permission.storage.request();
     if (!status.isGranted) {
+      // Try returning the original path (likely a content URI or app-specific path)
+      final fallbackPath = await FileSaver.instance.saveFile(
+        name: baseName,
+        ext: ext,
+        bytes: bytes,
+        mimeType: mimeType,
+      );
+      if (fallbackPath != null && fallbackPath.isNotEmpty) {
+        return fallbackPath;
+      }
+      final tempDir = await getTemporaryDirectory();
+      final tempPath = '${tempDir.path}${Platform.pathSeparator}$baseName.$ext';
+      final tempFile = File(tempPath);
+      await tempFile.writeAsBytes(bytes, flush: true);
+      final chosen = await FlutterFileDialog.saveFile(
+        params: SaveFileDialogParams(
+          sourceFilePath: tempPath,
+          fileName: '$baseName.$ext',
+        ),
+      );
+      if (chosen != null && chosen.isNotEmpty) {
+        return chosen;
+      }
       throw Exception('Storage permission denied');
     }
     final downloadsDir = await DownloadsPathProvider.downloadsDirectory;
-    final dir = downloadsDir ?? await _targetDownloadsDir();
-    final path = '${dir.path}${Platform.pathSeparator}$baseName.$ext';
+    final dirPath = downloadsDir?.path ?? '/storage/emulated/0/Download';
+    final dir = Directory(dirPath);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    final path = '$dirPath${Platform.pathSeparator}$baseName.$ext';
     final f = File(path);
     await f.writeAsBytes(bytes, flush: true);
     return path;
@@ -134,7 +164,7 @@ class ExportService {
     final bytes = excel.save()!;
     if (Platform.isAndroid) {
       final baseName = 'TrackPay_${_timestamp()}';
-      return _saveToCommonDownloadsAndroid(
+      return await _saveToCommonDownloadsAndroid(
         baseName: baseName,
         ext: 'xlsx',
         bytes: Uint8List.fromList(bytes),
@@ -187,7 +217,7 @@ class ExportService {
     final bytes = await pdf.save();
     if (Platform.isAndroid) {
       final baseName = 'TrackPay_${_timestamp()}';
-      return _saveToCommonDownloadsAndroid(
+      return await _saveToCommonDownloadsAndroid(
         baseName: baseName,
         ext: 'pdf',
         bytes: Uint8List.fromList(bytes),
