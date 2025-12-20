@@ -4,6 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'categories_screen.dart';
 import 'accounts_screen.dart';
 import '../../providers/settings_provider.dart';
+import 'package:trackpay/services/backup_service.dart';
+import 'package:trackpay/utils/app_snackbar.dart';
+import 'package:trackpay/providers/account_provider.dart';
+import 'package:trackpay/providers/category_provider.dart';
+import 'package:trackpay/providers/budget_provider.dart';
+import 'package:trackpay/providers/transaction_provider.dart';
+import 'dart:io';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -74,6 +81,26 @@ class SettingsScreen extends ConsumerWidget {
                       MaterialPageRoute(builder: (_) => const AccountsScreen()),
                     );
                   },
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.cloud_download_outlined),
+                  title: const Text("Export CSV (Backup)"),
+                  onTap: () => _exportCsv(context),
+                ),
+                const Divider(height: 0),
+                ListTile(
+                  leading: const Icon(Icons.cloud_upload_outlined),
+                  title: const Text("Import CSV (Restore)"),
+                  onTap: () => _importCsv(context, ref),
                 ),
               ],
             ),
@@ -156,5 +183,65 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _exportCsv(BuildContext context) async {
+    try {
+      final path = await BackupService.exportAllToCsv();
+      AppSnackbar.show(context, message: 'Backup created at $path');
+    } catch (e) {
+      AppSnackbar.show(context, message: 'Export failed', isError: true);
+    }
+  }
+
+  Future<void> _importCsv(BuildContext context, WidgetRef ref) async {
+    try {
+      final backups = await BackupService.listBackups();
+      if (backups.isEmpty) {
+        AppSnackbar.show(context, message: 'No backups found', isError: true);
+        return;
+      }
+      Directory? selected;
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: const Text('Select Backup'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: backups.length,
+                itemBuilder: (ctx, i) {
+                  final b = backups[i];
+                  return ListTile(
+                    title: Text(b.path.split('/').last),
+                    onTap: () {
+                      selected = b;
+                      Navigator.pop(ctx);
+                    },
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              )
+            ],
+          );
+        },
+      );
+      if (selected == null) return;
+      await BackupService.importAllFromCsv(sourceDir: selected, clearExisting: true);
+      ref.read(accountNotifierProvider.notifier).loadAccounts();
+      ref.read(categoryNotifierProvider.notifier).loadCategories();
+      ref.read(budgetNotifierProvider.notifier).loadBudgets();
+      ref.read(transactionProvider.notifier).loadTransactions();
+      AppSnackbar.show(context, message: 'Data restored');
+    } catch (e) {
+      AppSnackbar.show(context, message: 'Import failed', isError: true);
+    }
   }
 }
