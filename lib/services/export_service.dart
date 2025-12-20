@@ -107,7 +107,7 @@ class ExportService {
       pw.MultiPage(
         build: (context) => [
           pw.Header(level: 0, text: 'TrackPay Transactions'),
-          pw.Table.fromTextArray(headers: headers, data: data),
+          pw.TableHelper.fromTextArray(headers: headers, data: data),
         ],
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trackpay/utils/csv_utils.dart';
+import 'package:excel/excel.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 void main() {
   testWidgets('App builds simple scaffold', (WidgetTester tester) async {
@@ -30,5 +32,21 @@ void main() {
       expect(rows.length, 2);
       expect(rows[1], ['x', 'y, z', 'q"q']);
     });
+  });
+
+  test('excel workbook creates bytes', () {
+    final excel = Excel.createExcel();
+    final sh = excel['Sheet1'];
+    sh.appendRow(['a', 'b', 'c']);
+    final bytes = excel.save();
+    expect(bytes, isNotNull);
+    expect(bytes!.isNotEmpty, true);
+  });
+
+  test('pdf document creates bytes', () async {
+    final doc = pw.Document();
+    doc.addPage(pw.Page(build: (ctx) => pw.Text('Hello')));
+    final bytes = await doc.save();
+    expect(bytes.isNotEmpty, true);
   });
 }
