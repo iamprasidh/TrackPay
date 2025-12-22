@@ -52,31 +52,31 @@ A comprehensive personal finance management application built with Flutter. Trac
 - **flutter_launcher_icons**: App icon management
 - **flutter_lints**: Dart linting
 
-##  Project Structure
+## 📋 Project Structure
 
-`
+```
 lib/
- main.dart                 # App entry point and theme configuration
- models/                   # Data models
-    account.dart         # Account model
-    budget.dart          # Budget model
-    category.dart        # Category model
-    settings.dart        # Application settings
-    transaction.dart     # Transaction model
-    transaction_type.dart# Transaction type (Income/Expense)
-    user.dart            # User profile model
- providers/               # Riverpod state management
- screens/                 # UI Screens
-    home_screen.dart     # Main home screen
-    launch/              # App launch/splash screens
-    intro/               # Introduction/onboarding screens
-    dashboard/           # Analytics and dashboard screens
-    transactions/        # Transaction management screens
-    accounts/            # Account management screens
-    settings/            # Settings screen
- services/                # Business logic and API integration
- utils/                   # Utility functions and constants
-`
+├── main.dart                 # App entry point and theme configuration
+├── models/                   # Data models
+│   ├── account.dart         # Account model
+│   ├── budget.dart          # Budget model
+│   ├── category.dart        # Category model
+│   ├── settings.dart        # Application settings
+│   ├── transaction.dart     # Transaction model
+│   ├── transaction_type.dart# Transaction type (Income/Expense)
+│   └── user.dart            # User profile model
+├── providers/               # Riverpod state management
+├── screens/                 # UI Screens
+│   ├── home_screen.dart     # Main home screen
+│   ├── launch/              # App launch/splash screens
+│   ├── intro/               # Introduction/onboarding screens
+│   ├── dashboard/           # Analytics and dashboard screens
+│   ├── transactions/        # Transaction management screens
+│   ├── accounts/            # Account management screens
+│   └── settings/            # Settings screen
+├── services/                # Business logic and API integration
+└── utils/                   # Utility functions and constants
+```
 
 ##  Getting Started
 
